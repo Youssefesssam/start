@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
 import '../../../utilites/appAssets.dart';
+import '../features/featuresHomeScreenUsers/Contents/aword.dart';
+import '../features/featuresHomeScreenUsers/Contents/gift.dart';
+import '../features/featuresHomeScreenUsers/Contents/score.dart';
 import '../features/featuresHomeScreenUsers/appBarUser/appBarUsers/appBarUser.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/bottomAppBarUsers.dart';
-import '../features/featuresHomeScreenUsers/bodyScreenUsers/chartScatter/chartScatter.dart';
-import '../features/featuresHomeScreenUsers/bodyScreenUsers/slider/designCard/designCard.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/slider/slide.dart';
+
 class HomeScreenUsers extends StatelessWidget {
   const HomeScreenUsers({super.key});
-
   static const String routeName = "homeScreenUsers";
 
   @override
@@ -16,8 +18,9 @@ class HomeScreenUsers extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage(AppAssets.backGround), fit: BoxFit.fill)),
+            gradient: LinearGradient(
+                colors: [Colors.white,Colors.white],
+                begin: Alignment.bottomCenter)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -25,44 +28,51 @@ class HomeScreenUsers extends StatelessWidget {
                 margin: const EdgeInsets.only(
                     left: 30, right: 30, top: 30, bottom: 10),
                 child: const AppBarUser()),
-
-
+            
             const bottomAppBarUsers(),
-
-
             Container(
               margin: const EdgeInsets.only(top: 10, left: 30),
               child: Row(
                 children: [
                   const Text(
-                    "Range attendas",
+                    "General level",
                     textAlign: TextAlign.start,
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(
+                        fontSize: 25,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold),
                   ),
-                  Image.asset(AppAssets.rank,height: 30,width: 40,)
+                  Image.asset(
+                    AppAssets.rank,
+                    height: 30,
+                    width: 40,
+                  )
                 ],
-
               ),
             ),
-
-
-
-
             const SizedBox(
               height: 10,
             ),
-             Expanded(flex: 5, child: ChartScatter()),
+            const Expanded(flex: 5, child: Charts()),
             Row(
               children: [
                 Container(
-                    margin: const EdgeInsets.only(left: 20, bottom: 20),
+                    margin: const EdgeInsets.only(left: 30, bottom: 20),
                     child: const Text(
-                      "Contents",
-                      style: TextStyle(fontSize: 25),
+                      "Content",
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold),
                     )),
                 Container(
                     margin: const EdgeInsets.only(left: 5, bottom: 20),
-                    child: Image.asset(AppAssets.content,height: 30,width: 40,))
+                    child: Image.asset(
+                      AppAssets.content,
+                      height: 30,
+                      width: 40,
+                      color: Colors.orange,
+                    )),
               ],
             ),
             Container(
@@ -73,24 +83,64 @@ class HomeScreenUsers extends StatelessWidget {
               height: MediaQuery.of(context).size.height * .13,
               child: Row(
                 children: [
+                  Aword(
+                    color: Colors.black,
+                    path: AppAssets.speech,
+                    titleCard: "Weekly word",
+                    numNatification: 8,
+                    colorNatification: Colors.orange,
+                    appearNatification: true,
+                  ),
+                  const SizedBox(width: 10),
+
                   Expanded(
-                      flex: 1,
-                      child: DesignCard(
-                        titleCard: "Score",
-                        path:AppAssets.bestScore,
-                        color: Colors.black,
-                      )),
+                    child: Score(
+                      color: Colors.black,
+                      path: AppAssets.bestScore,
+                      titleCard: "Score",
+                      numNatification: 3,
+                      colorNatification: Colors.orange,
+                      appearNatification: false,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
                   Expanded(
-                      flex: 1,
-                      child: DesignCard(
-                          titleCard: "A Word", color: Colors.black,path: AppAssets.days,)),
-                  Expanded(
-                      flex: 1,
-                      child: DesignCard(
-                          path:AppAssets.giveAway,
-                          titleCard: "Gift", color: Colors.black)),
+                    flex: 1,
+                    child: Gift(
+                      color: Colors.black,
+                      path: AppAssets.giftCard,
+                      titleCard: "Gift",
+                      numNatification: 1,
+                      colorNatification: Colors.orange,
+                      appearNatification: true,
+                    ),
+                  ),
+
+
                 ],
               ),
+            ),
+            Row(
+              children: [
+                Container(
+                    margin: const EdgeInsets.only(left: 30,),
+                    child: const Text(
+                      "General Content",
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold),
+                    )),
+                Container(
+                    margin: const EdgeInsets.only(left: 5,),
+                    child: Image.asset(
+                      AppAssets.content,
+                      height: 30,
+                      width: 40,
+                      color: Colors.orange,
+                    )),
+              ],
             ),
             SliderPic(),
           ],

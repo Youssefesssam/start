@@ -1,3 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:star_t/ui/screens/auth/loginScreen/loginScreen.dart';
 import 'package:star_t/ui/screens/auth/registerScreen/regsterScreen.dart';
@@ -5,6 +9,7 @@ import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/ScreenHomeL
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/appBarLeaders/attendManual/attendManual.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/achive/achive.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/appBarUser/setting/setting.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/slider/event/event.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/slider/task/task.dart';
@@ -14,8 +19,15 @@ import 'package:star_t/ui/screens/homeScreen/homeScreenUsers.dart';
 import 'package:star_t/ui/screens/splashScreen/splashScreen.dart';
 
 
-void main() {
-  runApp(const MyApp());
+void main()async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,
+  );
+  //await FirebaseFirestore.instance.disableNetwork();
+  FirebaseFirestore.instance.settings =
+     const Settings(cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+  runApp(  const MyApp());
 }
 
 class MyApp extends StatelessWidget{
@@ -25,6 +37,8 @@ class MyApp extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute:HomeScreenUsers.routeName ,// This trailing comma makes auto-formatting nicer for build methods.
+       debugShowCheckedModeBanner: false,
       routes: {
         HomeScreenLeaders.routeName:(_)=> const HomeScreenLeaders(),
         HomeScreenUsers.routeName:(_)=> const HomeScreenUsers(),
@@ -39,8 +53,8 @@ class MyApp extends StatelessWidget{
         ScreenHomeLeaders.routeName:(_)=> ScreenHomeLeaders(),
         AttendManual.routeName:(_)=>const AttendManual(),
         Achive.routeName:(_)=>const Achive(),
+        Statistics.routeName:(_)=>const Statistics(),
       },
-      initialRoute:HomeScreenLeaders.routeName ,// This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

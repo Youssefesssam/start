@@ -2,7 +2,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../utilites/appAssets.dart';
-import 'designCard/designCard.dart';
+import '../designCard/designCard.dart';
 import 'event/event.dart';
 
 
@@ -11,10 +11,9 @@ class SliderPic extends StatelessWidget {
   static const String routeName ="sliderPic";
 
   List<Widget> pic =[
-    DesignCard(titleCard: "event", color: Colors.black,path: AppAssets.banner,statue: false),
-    DesignCard(titleCard: "task", color: Colors.black,path: AppAssets.check,statue: false),
-    DesignCard(titleCard: "teem", color: Colors.black,path: AppAssets.teem,statue: false),
-
+    DesignCard(titleCard: "team" ,path: AppAssets.meeting, appearNatification: true, colorNatification: Colors.orange, numNatification: 2,),
+    DesignCard(titleCard: "event",path: AppAssets.calendar, appearNatification: true, colorNatification: Colors.orange, numNatification: 6,),
+    DesignCard(titleCard: "task" ,path: AppAssets.planning,appearNatification: true , colorNatification: Colors.orange, numNatification: 17),
   ];
   final CarouselController _carouselController = CarouselController();
   @override
@@ -23,12 +22,12 @@ class SliderPic extends StatelessWidget {
         children: [
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, EventScreen.routeName);
+              //Navigator.pushNamed(context, EventScreen.routeName);
             },
             child: CarouselSlider(
                 items: pic,
                 options: CarouselOptions(
-                  height: 200,
+                  height: 190,
                   viewportFraction: .4,
                   initialPage: 0,
                   enableInfiniteScroll: true ,

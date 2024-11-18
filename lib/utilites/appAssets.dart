@@ -27,4 +27,11 @@ static const String event = 'assets/icons/event.png';
 static const String approve = 'assets/icons/approve.png';
 static const String clipboard = 'assets/icons/clipboard.png';
 static const String days = 'assets/icons/days.png';
+static const String box = 'assets/newIcon/box.png';
+static const String calendar = 'assets/newIcon/calendar.png';
+static const String giftCard = 'assets/newIcon/giftcard.png';
+static const String meeting = 'assets/newIcon/meeting.png';
+static const String planning = 'assets/newIcon/planning.png';
+static const String speech = 'assets/newIcon/speech.png';
+
 }

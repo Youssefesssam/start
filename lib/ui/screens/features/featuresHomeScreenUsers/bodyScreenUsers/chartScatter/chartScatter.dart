@@ -19,13 +19,13 @@ class _ChartScatterState extends State<ChartScatter> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          Container(
-            height: MediaQuery.of(context).size.height*.26,
+          SizedBox(
+            height: MediaQuery.of(context).size.height*.22,
             child: AspectRatio(
-              aspectRatio: 16/9,
-
-              child: DChartComboO(
+              aspectRatio: 16/8,
+              child: DChartComboO(animate: true,
                 configRenderPoint: ConfigRenderPoint(
+
                     radiusPx: 3,
                     strokeWidthPx: 10,
                     symbolRender: SymbolRenderCircle(
@@ -35,15 +35,15 @@ class _ChartScatterState extends State<ChartScatter> {
                 groupList: [
 
                   OrdinalGroup(id: '1',
-                      chartType: ChartType.scatterPlot,color: Color(0xfffdb900),
+                      chartType: ChartType.scatterPlot,color: Colors.orange,
                       data: [
-                        OrdinalData(domain: 'Mon', measure: 3.5),
-                        OrdinalData(domain: 'Tue', measure: 5),
-                        OrdinalData(domain: 'Wed', measure: 9),
-                        OrdinalData(domain: 'Thu', measure: 6.5),
-                        OrdinalData(domain: 'fri', measure: 6),
-                        OrdinalData(domain: 'sun', measure: 7),
-                        OrdinalData(domain: 'sat', measure: 6.5),
+                        OrdinalData(domain: 'Mon 1', measure: 3.5),
+                        OrdinalData(domain: 'Mon 2', measure: 10),
+                        OrdinalData(domain: 'Mon 3', measure: 9),
+                        OrdinalData(domain: 'Mon 4', measure: 6.5),
+                        OrdinalData(domain: 'Mon 5', measure: 6),
+                        OrdinalData(domain: 'Mon 6', measure: 7),
+                        OrdinalData(domain: 'Mon 7', measure: 6.5),
                       ])
                 ],
               ),),
