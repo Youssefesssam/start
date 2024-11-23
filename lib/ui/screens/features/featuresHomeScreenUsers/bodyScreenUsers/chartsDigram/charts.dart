@@ -14,7 +14,7 @@ class _ChartsState extends State<Charts> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 20,right: 20,bottom: 5,top: 5),
+      margin: const EdgeInsets.only(left: 20,right: 20,bottom: 5,top: 0),
       child: AspectRatio(
         aspectRatio: 4,
         child: BarChart(
@@ -45,16 +45,16 @@ class _ChartsState extends State<Charts> {
                     switch (value.toInt()) {
                       case 1:
                         return const Text('Jan',
-                            style: TextStyle(color: Colors.orange));
+                            style: TextStyle(color: Colors.deepOrangeAccent));
                       case 2:
                         return const Text('Feb',
-                            style: TextStyle(color: Colors.orange));
+                            style: TextStyle(color: Colors.deepOrangeAccent));
                       case 3:
                         return const Text('Mar',
-                            style: TextStyle(color: Colors.orange));
+                            style: TextStyle(color: Colors.deepOrangeAccent));
                       case 4:
                         return const Text('Apr',
-                            style: TextStyle(color: Colors.orange));
+                            style: TextStyle(color: Colors.deepOrangeAccent));
                       case 5:
                         return const Text('May',
                             style: TextStyle(color: Colors.orange));
@@ -135,7 +135,7 @@ class _ChartsState extends State<Charts> {
                   toY: 2,
                   fromY: 0,
                   width: 7,
-                  color: Colors.orange,
+                  color: Colors.blueAccent,
                   borderRadius: const BorderRadius.only(
                     bottomRight: Radius.circular(0),
                     topRight: Radius.circular(6),
@@ -161,7 +161,7 @@ class _ChartsState extends State<Charts> {
                   toY: 5,
                   fromY: 0,
                   width: 7,
-                  color: Colors.orange,
+                  color: Colors.blueAccent,
                   borderRadius: const BorderRadius.only(
                     bottomRight: Radius.circular(0),
                     topRight: Radius.circular(6),
@@ -226,7 +226,7 @@ class _ChartsState extends State<Charts> {
                   toY: 4,
                   fromY: 0,
                   width: 7,
-                  color: Colors.orange,
+                  color: Colors.blueAccent,
                   borderRadius: const BorderRadius.only(
                     bottomRight: Radius.circular(0),
                     topRight: Radius.circular(6),

@@ -46,7 +46,7 @@ class _ContentsState extends State<Score> {
           backgroundColor: Color(0xBA565353),
           borderRadius: BorderRadius.circular(40),
           context,
-          duration: Duration(seconds: 5),
+          duration: Duration(seconds: 3),
           configuration: WidgetConfiguration(
             widget: Column(
               children: [
@@ -96,7 +96,6 @@ class _ContentsState extends State<Score> {
       ),
     );
   }
-  // دالة Score لتحديث النص بناءً على score
   void scoreState(int score, int month) {
     if (score <= 100 && score > 80) {
       title = "Excellent! Keep it up"; // For high scores

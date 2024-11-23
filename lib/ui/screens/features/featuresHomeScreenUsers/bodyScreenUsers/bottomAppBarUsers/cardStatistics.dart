@@ -5,16 +5,16 @@ class cardStatistics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Column(
       children: [
         Container(
           padding: EdgeInsets.all(20),
-          margin: EdgeInsets.all(20),
+          margin: EdgeInsets.only(bottom: 20,left: 20,right: 20),
           decoration: const BoxDecoration(
               gradient: LinearGradient(
-                  colors: [ Colors.indigo,Colors.black],
-                  begin: Alignment.topLeft),
-              color: Color(0x77bdafaf),
+                  colors: [ Colors.deepOrangeAccent,Colors.blueAccent,],
+                  begin: Alignment.bottomCenter),
               borderRadius: BorderRadius.all(Radius.circular(20))),
           child: Row(
             children: [
@@ -33,8 +33,8 @@ class cardStatistics extends StatelessWidget {
                   Text(
                     "1/80",
                     style: TextStyle(
-                      fontSize: 25,
-                      color: Color(0xfffbb800),
+                      fontSize: 30,
+                      color:Colors.white, //Color(0xfffbb800),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -55,7 +55,7 @@ class cardStatistics extends StatelessWidget {
                     "125",
                     style: TextStyle(
                       fontSize: 20,
-                      color: Color(0xffb4a9a9),
+                      color: Color(0xffe5d9d9),
                     ),
                   ),
                 ],

@@ -31,7 +31,7 @@ class _ContentsState extends State<Aword> {
     return InkWell(
       onTap: () {
         StatusAlert.show(
-          backgroundColor: const Color(0x8e9d9696),
+          backgroundColor: const Color(0xa82f2d2d),
           borderRadius: BorderRadius.circular(40),
           context,
           duration: const Duration(seconds: 5),
