@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/home.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:star_t/ui/screens/auth/loginScreen/loginScreen.dart';
@@ -49,10 +50,11 @@ class MyApp extends StatelessWidget {
         EventScreen.routeName: (_) => const EventScreen(),
         TeemScreen.routeName: (_) => const TeemScreen(),
         TaskScreen.routeName: (_) => const TaskScreen(),
-        ScreenHomeLeaders.routeName: (_) => ScreenHomeLeaders(),
+        ScreenHomeLeaders.routeName: (_) => const ScreenHomeLeaders(),
         AttendManual.routeName: (_) => const AttendManual(),
         Achive.routeName: (_) => const Achive(),
         Statistics.routeName: (_) => const Statistics(),
+        Home.routeName: (_) => const Home(),
       },
     );
   }

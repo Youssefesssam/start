@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/ScreenHomeLeaders/screenHomeLeaders.dart';
 
 class AppBarLaeders extends StatelessWidget {
   const AppBarLaeders({super.key});
@@ -17,7 +18,9 @@ class AppBarLaeders extends StatelessWidget {
               Border.all(width: 3, color: const Color(0xFFD91B69)),
             ),
             child: InkWell(
-              onTap: (){},
+              onTap: (){
+                Navigator.pushNamed(context, ScreenHomeLeaders.routeName);
+              },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

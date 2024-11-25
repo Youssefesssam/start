@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/appBarLeaders/appBar.dart';
 import '../features/featuresHomeScreenLeaders/ScreenHomeLeaders/screenHomeLeaders.dart';
+import '../features/featuresHomeScreenLeaders/home/home.dart';
 import '../features/featuresHomeScreenUsers/appBarUser/setting/setting.dart';
 class HomeScreenLeaders extends StatefulWidget {
   static const String routeName = "screenHomeLeaders";
@@ -10,8 +11,8 @@ class HomeScreenLeaders extends StatefulWidget {
 }
 class _HomeScreenLeaders extends State<HomeScreenLeaders> {
   int currentTapIndex = 0;
-  List <Widget> screen =[ const ScreenHomeLeaders(),const Setting()];
-  Widget currentTab = const ScreenHomeLeaders();
+  List <Widget> screen =[const Home(),const ScreenHomeLeaders(),const Setting()];
+  Widget currentTab =  const Home();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +38,7 @@ class _HomeScreenLeaders extends State<HomeScreenLeaders> {
           elevation: 0,
           selectedItemColor: const Color(0xfffa8e00),
           items: [
+            bottomNavigationBarItem(Icons.home_filled,"Home"),
             bottomNavigationBarItem(Icons.list_alt,"list"),
             bottomNavigationBarItem(Icons.settings,"setting"),
           ],
