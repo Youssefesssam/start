@@ -62,7 +62,7 @@ class _SettingState extends State<Setting> {
             child: ElevatedButton(
               style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.green)),
               onPressed: () {
-                counter(count);
+               // counter(count);
                 setState(() {});
               },
               child: Text("Add"),
@@ -74,13 +74,5 @@ class _SettingState extends State<Setting> {
   }
 }
 
-
-  void counter(int count) {
-    print("start add data");
-    ModelInfoUser modelInfoUser = ModelInfoUser(count: count);
-    print("data is send ${modelInfoUser.toJson()}");
-
-    FirebaseUtils.addData(modelInfoUser);
-  }
 
 

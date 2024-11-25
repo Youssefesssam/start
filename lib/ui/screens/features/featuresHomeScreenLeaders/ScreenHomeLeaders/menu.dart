@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../firebase/ModelInfoUser.dart';
+import '../../../../../firebase/firebase.dart';
+
 class Menu extends StatefulWidget {
   const Menu({super.key});
 
@@ -8,13 +11,20 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> {
-  int score = 0; // إجمالي النقاط
-  final Map<String, bool> states = { // حالة كل عنصر
-    "mass": false,
-    "communion": false,
-    "confession": false,
-    "meeting": false,
-  };
+  int totalScore = 0; // إجمالي النقاط
+
+  // حالات العناصر ونقاطها
+  bool isMassActive = false;
+  int massScore = 0;
+
+  bool isCommunionActive = false;
+  int communionScore = 0;
+
+  bool isConfessionActive = false;
+  int confessionScore = 0;
+
+  bool isMeetingActive = false;
+  int meetingScore = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -33,37 +43,73 @@ class _MenuState extends State<Menu> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          buildRow("القداس", "mass"),
+          buildRow("القداس", isMassActive, massScore, () => toggleState("mass")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("التناول", "communion"),
+          buildRow("التناول", isCommunionActive, communionScore, () => toggleState("communion")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاعتراف", "confession"),
+          buildRow("الاعتراف", isConfessionActive, confessionScore, () => toggleState("confession")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاجتماع", "meeting"),
+          buildRow("الاجتماع", isMeetingActive, meetingScore, () => toggleState("meeting")),
           const Divider(thickness: 1, color: Colors.white),
           Row(
             children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                child: const Text(
-                  "حذف",
-                  style: TextStyle(fontSize: 25, color: Colors.red),
+              InkWell(
+                onTap: (){
+                  addScoreUser(
+                    totalScore,
+                    massScore,
+                    communionScore,
+                    confessionScore,
+                    meetingScore,
+                  );
+                },
+                child: const Icon(Icons.add, color: Colors.blueAccent, size: 30),
+              ),
+              InkWell(
+                onTap: (){
+                  addScoreUser(
+                    totalScore,
+                    massScore,
+                    communionScore,
+                    confessionScore,
+                    meetingScore,
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  child: const Text(
+                    "Add Score",
+                    style: TextStyle(fontSize: 20, color: Colors.blueAccent),
+                  ),
                 ),
               ),
-              const Spacer(),
+
+              Spacer(),
               InkWell(
-                onTap: resetScore,
-                child: const Icon(Icons.delete, color: Colors.red, size: 35),
+                onTap: resetScores,
+                child: const Icon(Icons.delete, color: Colors.red, size: 30),
               ),
+              InkWell(
+                onTap: resetScores,
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  child: const Text(
+                    "Delete Score ",
+                    style: TextStyle(fontSize: 20, color: Colors.red),
+                  ),
+                ),
+              ),
+
             ],
           ),
+
         ],
       ),
     );
   }
 
-  /// إنشاء صف عنصر واحد مع أنيميشن
-  Widget buildRow(String label, String key) {
+  // Create row for each item
+  Widget buildRow(String label, bool isActive, int score, VoidCallback toggle) {
     return Row(
       children: [
         Container(
@@ -76,27 +122,27 @@ class _MenuState extends State<Menu> {
         const Spacer(),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: states[key]!
-              ? const Text(
-            "+25",
-            key: ValueKey("visible"),
-            style: TextStyle(color: Colors.green, fontSize: 20),
+          child: isActive
+              ? Text(
+            "+$score",
+            key: ValueKey(label),
+            style: const TextStyle(color: Colors.green, fontSize: 20),
           )
               : const SizedBox(key: ValueKey("hidden")),
         ),
         const SizedBox(width: 10),
         InkWell(
-          onTap: () => toggleState(key),
+          onTap: toggle,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             transitionBuilder: (child, animation) {
               return ScaleTransition(scale: animation, child: child);
             },
             child: Icon(
-              states[key]!
+              isActive
                   ? Icons.check_box
                   : Icons.check_box_outline_blank_outlined,
-              key: ValueKey(states[key]),
+              key: ValueKey(isActive),
               color: Colors.white,
               size: 35,
             ),
@@ -106,28 +152,87 @@ class _MenuState extends State<Menu> {
     );
   }
 
-  /// تحديث الحالة عند الضغط
+  // Update the state for each item
   void toggleState(String key) {
     setState(() {
-      if (states[key] == true) {
-        // إذا كان مفعل، قم بإلغاء النقاط
-        states[key] = false;
-        score -= 25;
-      } else {
-        // إذا كان غير مفعل، أضف النقاط
-        states[key] = true;
-        score += 25;
+      if (key == "mass") {
+        if (isMassActive) {
+          isMassActive = false;
+          massScore = 0;
+          totalScore -= 25;
+        } else {
+          isMassActive = true;
+          massScore = 25;
+          totalScore += 25;
+        }
+      } else if (key == "communion") {
+        if (isCommunionActive) {
+          isCommunionActive = false;
+          communionScore = 0;
+          totalScore -= 25;
+        } else {
+          isCommunionActive = true;
+          communionScore = 25;
+          totalScore += 25;
+        }
+      } else if (key == "confession") {
+        if (isConfessionActive) {
+          isConfessionActive = false;
+          confessionScore = 0;
+          totalScore -= 25;
+        } else {
+          isConfessionActive = true;
+          confessionScore = 25;
+          totalScore += 25;
+        }
+      } else if (key == "meeting") {
+        if (isMeetingActive) {
+          isMeetingActive = false;
+          meetingScore = 0;
+          totalScore -= 25;
+        } else {
+          isMeetingActive = true;
+          meetingScore = 25;
+          totalScore += 25;
+        }
       }
     });
-    print("Score: $score");
+    print("Total Score: $totalScore");
   }
 
-  /// إعادة تعيين النقاط والحالات
-  void resetScore() {
+  // Reset all scores and states
+  void resetScores() {
     setState(() {
-      score = 0;
-      states.updateAll((key, value) => false);
+      totalScore = 0;
+      isMassActive = false;
+      massScore = 0;
+      isCommunionActive = false;
+      communionScore = 0;
+      isConfessionActive = false;
+      confessionScore = 0;
+      isMeetingActive = false;
+      meetingScore = 0;
     });
-    print("Score reset: $score");
+    print("Scores reset. Total Score: $totalScore");
   }
+  void addScoreUser(int score, int massScoreDB, int communionScoreDB, int confessionScoreDB, int meetingScoreDB) {
+    print("Start adding data");
+
+    // Create a model instance with the required data
+    ModelInfoUser modelInfoUser = ModelInfoUser(
+      score: score,
+      massScore: massScoreDB,
+      communionScore: communionScoreDB,
+      confessionScore: confessionScoreDB,
+      meetingScore: meetingScoreDB,
+    );
+
+    FirebaseUtils.addData(modelInfoUser).then((value) {
+          print("Data added successfully!");
+    }).catchError((error) {
+      print(error);
+
+    });
+  }
+
 }
