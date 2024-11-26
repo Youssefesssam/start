@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
 import '../../../utilites/appAssets.dart';
+import '../features/featuresHomeScreenUsers/Contents/achive/achive.dart';
 import '../features/featuresHomeScreenUsers/Contents/aword.dart';
 import '../features/featuresHomeScreenUsers/Contents/gift.dart';
 import '../features/featuresHomeScreenUsers/Contents/score.dart';
@@ -97,11 +98,11 @@ class HomeScreenUsers extends StatelessWidget {
                             children: [
                               Expanded(
                                 flex: 1,
-                                child: Gift(
+                                child: Achive(
                                   color: Colors.black,
-                                  path: AppAssets.giftCard,
-                                  titleCard: "Gift",
-                                  numNatification: 1,
+                                  path: AppAssets.achivement,
+                                  titleCard: "Achive",
+                                  numNatification: 8,
                                   colorNatification: Colors.orange,
                                   appearNatification: true,
                                 ),
@@ -139,15 +140,13 @@ class HomeScreenUsers extends StatelessWidget {
 
                         Expanded(
                           flex: 1,
-                          child: Container(
-                            child: Gift(
-                              color: Colors.black,
-                              path: AppAssets.giftCard,
-                              titleCard: "Gift",
-                              numNatification: 1,
-                              colorNatification: Colors.orange,
-                              appearNatification: true,
-                            ),
+                          child: Gift(
+                            color: Colors.black,
+                            path: AppAssets.giftCard,
+                            titleCard: "Gift",
+                            numNatification: 1,
+                            colorNatification: Colors.orange,
+                            appearNatification: true,
                           ),
                         ),
                       ],

@@ -81,12 +81,13 @@ class CardUser extends StatelessWidget {
           ),
           const Spacer(),
           const Text(
-            "Done",
+            "wating...",
             style: TextStyle(
-                fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                fontSize: 25, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ],
       ),
     );
   }
+
 }

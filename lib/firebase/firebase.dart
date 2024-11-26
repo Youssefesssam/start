@@ -32,6 +32,27 @@ class FirebaseUtils {
    return []; // Return an empty list in case of an error
   }
  }
+ static Future<Map<String, dynamic>> getStatistics() async {
+  try {
+   var snapshot = await FirebaseFirestore.instance
+       .collection(ModelInfoUser.collection)
+       .doc('x83zILnoyVzhAoD3iwK3') // استبدل بالوثيقة الصحيحة
+       .get();
+
+   if (snapshot.exists) {
+    return snapshot.data() as Map<String, dynamic>; // إرجاع جميع البيانات كخريطة
+   } else {
+    print("Document does not exist");
+    return {};
+   }
+  } catch (e) {
+   print("Error retrieving data from Firestore: $e");
+   return {};
+  }
+ }
 
 
 }
+
+
+

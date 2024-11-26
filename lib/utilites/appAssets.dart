@@ -33,5 +33,7 @@ static const String giftCard = 'assets/newIcon/giftcard.png';
 static const String meeting = 'assets/newIcon/meeting.png';
 static const String planning = 'assets/newIcon/planning.png';
 static const String speech = 'assets/newIcon/speech.png';
+static const String achive = 'assets/newIcon/achive.png';
+static const String achivement = 'assets/newIcon/achivement.png';
 
 }

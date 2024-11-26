@@ -4,7 +4,9 @@ import '../../../../../firebase/ModelInfoUser.dart';
 import '../../../../../firebase/firebase.dart';
 
 class Menu extends StatefulWidget {
-  const Menu({super.key});
+  final VoidCallback onCloseMenu; // Callback لإغلاق المنيو
+
+  const Menu({super.key, required this.onCloseMenu});
 
   @override
   State<Menu> createState() => _MenuState();
@@ -26,6 +28,10 @@ class _MenuState extends State<Menu> {
   bool isMeetingActive = false;
   int meetingScore = 0;
 
+  // حالة العملية (في انتظار أو مكتملة)
+  bool isWaiting = false;
+  bool isDone = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,72 +49,65 @@ class _MenuState extends State<Menu> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          buildRow("القداس", isMassActive, massScore, () => toggleState("mass")),
+          buildRow(
+              "القداس", isMassActive, massScore, () => toggleState("mass")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("التناول", isCommunionActive, communionScore, () => toggleState("communion")),
+          buildRow("التناول", isCommunionActive, communionScore, () =>
+              toggleState("communion")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاعتراف", isConfessionActive, confessionScore, () => toggleState("confession")),
+          buildRow("الاعتراف", isConfessionActive, confessionScore, () =>
+              toggleState("confession")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاجتماع", isMeetingActive, meetingScore, () => toggleState("meeting")),
+          buildRow("الاجتماع", isMeetingActive, meetingScore, () =>
+              toggleState("meeting")),
           const Divider(thickness: 1, color: Colors.white),
           Row(
             children: [
-              InkWell(
-                onTap: (){
-                  addScoreUser(
-                    totalScore,
-                    massScore,
-                    communionScore,
-                    confessionScore,
-                    meetingScore,
-                  );
-                },
-                child: const Icon(Icons.add, color: Colors.blueAccent, size: 30),
-              ),
-              InkWell(
-                onTap: (){
-                  addScoreUser(
-                    totalScore,
-                    massScore,
-                    communionScore,
-                    confessionScore,
-                    meetingScore,
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(10),
-                  child: const Text(
-                    "Add Score",
-                    style: TextStyle(fontSize: 20, color: Colors.blueAccent),
+              // عرض زر الانتظار أو الإضافة بناءً على الحالة
+              if (isWaiting)
+                Container(
+                    margin: const EdgeInsets.all(10),
+                    child: const CircularProgressIndicator(
+                        color: Colors.blueAccent))
+              else
+                if (isDone)
+                  const Icon(Icons.done, color: Colors.green, size: 30)
+                else
+                  InkWell(
+                    onTap:()=> addScoreUser(score: totalScore,meetingScoreDB: meetingScore,communionScoreDB: communionScore,confessionScoreDB: confessionScore,massScoreDB: massScore),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.add, color: Colors.blueAccent, size: 30),
+                        SizedBox(width: 10),
+                        Text(
+                          "Add Score",
+                          style: TextStyle(
+                              fontSize: 20, color: Colors.blueAccent),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-
-              Spacer(),
+              const Spacer(),
               InkWell(
                 onTap: resetScores,
-                child: const Icon(Icons.delete, color: Colors.red, size: 30),
-              ),
-              InkWell(
-                onTap: resetScores,
-                child: Container(
-                  margin: const EdgeInsets.all(10),
-                  child: const Text(
-                    "Delete Score ",
-                    style: TextStyle(fontSize: 20, color: Colors.red),
-                  ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.delete, color: Colors.red, size: 30),
+                    SizedBox(width: 10),
+                    Text(
+                      "Delete Score",
+                      style: TextStyle(fontSize: 20, color: Colors.red),
+                    ),
+                  ],
                 ),
               ),
-
             ],
           ),
-
         ],
       ),
     );
   }
 
-  // Create row for each item
   Widget buildRow(String label, bool isActive, int score, VoidCallback toggle) {
     return Row(
       children: [
@@ -139,9 +138,8 @@ class _MenuState extends State<Menu> {
               return ScaleTransition(scale: animation, child: child);
             },
             child: Icon(
-              isActive
-                  ? Icons.check_box
-                  : Icons.check_box_outline_blank_outlined,
+              isActive ? Icons.check_box : Icons
+                  .check_box_outline_blank_outlined,
               key: ValueKey(isActive),
               color: Colors.white,
               size: 35,
@@ -152,87 +150,83 @@ class _MenuState extends State<Menu> {
     );
   }
 
-  // Update the state for each item
   void toggleState(String key) {
     setState(() {
       if (key == "mass") {
-        if (isMassActive) {
-          isMassActive = false;
-          massScore = 0;
-          totalScore -= 25;
-        } else {
-          isMassActive = true;
-          massScore = 25;
-          totalScore += 25;
-        }
+        isMassActive = !isMassActive;
+        massScore = isMassActive ? 25 : 0;
       } else if (key == "communion") {
-        if (isCommunionActive) {
-          isCommunionActive = false;
-          communionScore = 0;
-          totalScore -= 25;
-        } else {
-          isCommunionActive = true;
-          communionScore = 25;
-          totalScore += 25;
-        }
+        isCommunionActive = !isCommunionActive;
+        communionScore = isCommunionActive ? 25 : 0;
       } else if (key == "confession") {
-        if (isConfessionActive) {
-          isConfessionActive = false;
-          confessionScore = 0;
-          totalScore -= 25;
-        } else {
-          isConfessionActive = true;
-          confessionScore = 25;
-          totalScore += 25;
-        }
+        isConfessionActive = !isConfessionActive;
+        confessionScore = isConfessionActive ? 25 : 0;
       } else if (key == "meeting") {
-        if (isMeetingActive) {
-          isMeetingActive = false;
-          meetingScore = 0;
-          totalScore -= 25;
-        } else {
-          isMeetingActive = true;
-          meetingScore = 25;
-          totalScore += 25;
-        }
+        isMeetingActive = !isMeetingActive;
+        meetingScore = isMeetingActive ? 25 : 0;
       }
+
+      totalScore = massScore + communionScore + confessionScore + meetingScore;
     });
-    print("Total Score: $totalScore");
   }
 
-  // Reset all scores and states
   void resetScores() {
     setState(() {
       totalScore = 0;
-      isMassActive = false;
-      massScore = 0;
-      isCommunionActive = false;
-      communionScore = 0;
-      isConfessionActive = false;
-      confessionScore = 0;
-      isMeetingActive = false;
-      meetingScore = 0;
+      isMassActive = isCommunionActive = isConfessionActive = isMeetingActive =
+      false;
+      massScore = communionScore = confessionScore = meetingScore = 0;
+      isWaiting = false;
+      isDone = false;
     });
-    print("Scores reset. Total Score: $totalScore");
   }
-  void addScoreUser(int score, int massScoreDB, int communionScoreDB, int confessionScoreDB, int meetingScoreDB) {
+
+
+  void addScoreUser( {required int score, required int meetingScoreDB, required int communionScoreDB, required int confessionScoreDB, required int massScoreDB}) {
     print("Start adding data");
 
-    // Create a model instance with the required data
+    // تحديث الحالة إلى انتظار
+    setState(() {
+      isWaiting = true;
+      isDone = false;
+    });
+
+    // إنشاء الكائن ModelInfoUser
     ModelInfoUser modelInfoUser = ModelInfoUser(
       score: score,
-      massScore: massScoreDB,
-      communionScore: communionScoreDB,
-      confessionScore: confessionScoreDB,
+      massScore: massScore,
+      communionScore: communionScore,
+      confessionScore: confessionScore,
       meetingScore: meetingScoreDB,
     );
 
+    // إضافة البيانات إلى Firebase
     FirebaseUtils.addData(modelInfoUser).then((value) {
-          print("Data added successfully!");
-    }).catchError((error) {
-      print(error);
+      print("Data added successfully!");
 
+      // تحديث الحالة إلى مكتمل
+      setState(() {
+        isWaiting = false;
+        isDone = true;
+      });
+
+      // إغلاق المنيو بعد تأخير قصير
+      Future.delayed(const Duration(milliseconds: 650), () {
+        widget.onCloseMenu();
+      });
+    }).catchError((error) {
+      print("Error adding data: $error");
+
+      // إعادة الحالة إلى الوضع الافتراضي عند حدوث خطأ
+      setState(() {
+        isWaiting = false;
+        isDone = false;
+      });
     });
   }
-
 }
+
+
+
+
+

@@ -42,9 +42,9 @@ class _HomeScreenLeaders extends State<ScreenHomeLeaders> {
                         });
                       },
                       background: Container(
-                        decoration:  const BoxDecoration(
+                        decoration:  BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(20)),
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [Colors.red, Colors.black,Colors.black],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
@@ -133,6 +133,12 @@ class _HomeScreenLeaders extends State<ScreenHomeLeaders> {
   }
 
   Widget _buildMenu() {
-    return const Menu();
+    return Menu(
+      onCloseMenu: () {
+        setState(() {
+          selectedCardIndex = null; // إخفاء المنيو
+        });
+      },
+    );
   }
 }

@@ -96,7 +96,7 @@ class _ContentsState extends State<Score> {
       ),
     );
   }
-  void scoreState(int score, int month) {
+  void scoreState(int score) {
     if (score <= 100 && score > 80) {
       title = "Excellent! Keep it up"; // For high scores
     } else if (score <= 80 && score > 60) {
@@ -116,19 +116,24 @@ class _ContentsState extends State<Score> {
   }
   Future<void> getScore() async {
     try {
+      // احصل على جميع الوثائق داخل المجموعة
       var documents = await FirebaseUtils.getAllDocuments(ModelInfoUser.collection);
+
       if (documents != null && documents.isNotEmpty) {
+        // احصل على قيمة score من أول وثيقة
+        var scoreData = documents[0].data() as Map<String, dynamic>;
         setState(() {
-          score = documents[0]['count'] ?? 0;
-          scoreState(score, month);
+          score = scoreData['score'] ?? 0; // إذا لم يكن الحقل موجودًا، يتم تعيين 0 كقيمة افتراضية
+          scoreState(score); // تحديث النصوص بناءً على قيمة score
         });
       } else {
-        print("Empty");
+        print("No data found in Firestore.");
       }
     } catch (e) {
-      print('Error$e');
+      print('Error retrieving score from Firestore: $e');
     }
   }
+
 }
 
 
