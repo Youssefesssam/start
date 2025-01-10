@@ -4,12 +4,14 @@ class cardStatistics extends StatelessWidget {
   final String title; // العنوان الرئيسي
   final int score; // النقاط
   final String subtitle; // العنوان الفرعي
+  final int mod; // العنوان الفرعي
 
   const cardStatistics({
     super.key,
     required this.title,
     required this.score,
     required this.subtitle,
+    required this.mod,
   });
 
   @override
@@ -21,8 +23,8 @@ class cardStatistics extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepOrangeAccent, Colors.blueAccent],
-              begin: Alignment.bottomCenter,
+              colors: [Colors.deepOrange,Colors.pink,Colors.purple,Colors.indigo,Colors.blue],
+                end: Alignment(1, 2),
             ),
             borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
@@ -63,7 +65,7 @@ class cardStatistics extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeAlign: 7,
                   strokeCap: StrokeCap.round,
-                  value: score / 100, // قيمة النسبة (افتراضًا أن 100 هي الحد الأقصى)
+                  value: score / mod, // قيمة النسبة (افتراضًا أن 100 هي الحد الأقصى)
                   color: const Color(0xfff9b700),
                   backgroundColor: const Color(0xff868181),
                   strokeWidth: 10,

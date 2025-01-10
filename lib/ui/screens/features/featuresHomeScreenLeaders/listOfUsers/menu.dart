@@ -1,12 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../../firebase/ModelInfoUser.dart';
+import 'package:provider/provider.dart';
+import 'package:star_t/firebase/authProvider.dart';
+import 'package:star_t/firebase/dataProvider.dart';
+import '../../../../../model/modelData.dart';
 import '../../../../../firebase/firebase.dart';
+import '../../featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 
 class Menu extends StatefulWidget {
+  String userId;
+  int weekNum;
   final VoidCallback onCloseMenu; // Callback لإغلاق المنيو
 
-  const Menu({super.key, required this.onCloseMenu});
+   Menu({super.key, required this.onCloseMenu,required this.userId,required this.weekNum,});
 
   @override
   State<Menu> createState() => _MenuState();
@@ -34,6 +40,8 @@ class _MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
+    AuthProviders authProviders = Provider.of(context);
+    DataProvider dataProvider = Provider.of(context);
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -52,14 +60,14 @@ class _MenuState extends State<Menu> {
           buildRow(
               "القداس", isMassActive, massScore, () => toggleState("mass")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("التناول", isCommunionActive, communionScore, () =>
-              toggleState("communion")),
+          buildRow("التناول", isCommunionActive, communionScore,
+              () => toggleState("communion")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاعتراف", isConfessionActive, confessionScore, () =>
-              toggleState("confession")),
+          buildRow("الاعتراف", isConfessionActive, confessionScore,
+              () => toggleState("confession")),
           const Divider(thickness: 1, color: Colors.white),
-          buildRow("الاجتماع", isMeetingActive, meetingScore, () =>
-              toggleState("meeting")),
+          buildRow("الاجتماع", isMeetingActive, meetingScore,
+              () => toggleState("meeting")),
           const Divider(thickness: 1, color: Colors.white),
           Row(
             children: [
@@ -69,29 +77,39 @@ class _MenuState extends State<Menu> {
                     margin: const EdgeInsets.all(10),
                     child: const CircularProgressIndicator(
                         color: Colors.blueAccent))
+              else if (isDone)
+                const Icon(Icons.done, color: Colors.green, size: 30)
               else
-                if (isDone)
-                  const Icon(Icons.done, color: Colors.green, size: 30)
-                else
-                  InkWell(
-                    onTap:()=> addScoreUser(score: totalScore,meetingScoreDB: meetingScore,communionScoreDB: communionScore,confessionScoreDB: confessionScore,massScoreDB: massScore),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.add, color: Colors.blueAccent, size: 30),
-                        SizedBox(width: 10),
-                        Text(
-                          "Add Score",
-                          style: TextStyle(
-                              fontSize: 20, color: Colors.blueAccent),
-                        ),
-                      ],
-                    ),
+                InkWell(
+                  onTap: (){
+
+                    addScoreUser(
+                        score: totalScore,
+                        meetingScoreDB: meetingScore,
+                        communionScoreDB: communionScore,
+                        confessionScoreDB: confessionScore,
+                        massScoreDB: massScore,
+                        weekNumber: widget.weekNum
+                    );
+                  },
+
+                  child: const Row(
+                    children: [
+                      Icon(Icons.add, color: Colors.blueAccent, size: 30),
+                      SizedBox(width: 10),
+                      Text(
+                        "Add Score",
+                        style:
+                            TextStyle(fontSize: 20, color: Colors.blueAccent),
+                      ),
+                    ],
                   ),
+                ),
               const Spacer(),
               InkWell(
                 onTap: resetScores,
-                child: Row(
-                  children: const [
+                child: const Row(
+                  children: [
                     Icon(Icons.delete, color: Colors.red, size: 30),
                     SizedBox(width: 10),
                     Text(
@@ -123,10 +141,10 @@ class _MenuState extends State<Menu> {
           duration: const Duration(milliseconds: 300),
           child: isActive
               ? Text(
-            "+$score",
-            key: ValueKey(label),
-            style: const TextStyle(color: Colors.green, fontSize: 20),
-          )
+                  "+$score",
+                  key: ValueKey(label),
+                  style: const TextStyle(color: Colors.green, fontSize: 20),
+                )
               : const SizedBox(key: ValueKey("hidden")),
         ),
         const SizedBox(width: 10),
@@ -138,8 +156,9 @@ class _MenuState extends State<Menu> {
               return ScaleTransition(scale: animation, child: child);
             },
             child: Icon(
-              isActive ? Icons.check_box : Icons
-                  .check_box_outline_blank_outlined,
+              isActive
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank_outlined,
               key: ValueKey(isActive),
               color: Colors.white,
               size: 35,
@@ -173,58 +192,80 @@ class _MenuState extends State<Menu> {
   void resetScores() {
     setState(() {
       totalScore = 0;
-      isMassActive = isCommunionActive = isConfessionActive = isMeetingActive =
-      false;
+      isMassActive =
+          isCommunionActive = isConfessionActive = isMeetingActive = false;
       massScore = communionScore = confessionScore = meetingScore = 0;
       isWaiting = false;
       isDone = false;
     });
   }
-
-
-  void addScoreUser( {required int score, required int meetingScoreDB, required int communionScoreDB, required int confessionScoreDB, required int massScoreDB}) {
+  void addScoreUser({
+    required int score,
+    required int meetingScoreDB,
+    required int communionScoreDB,
+    required int confessionScoreDB,
+    required int massScoreDB,
+    required int weekNumber
+  }) async {
     print("Start adding data");
 
-    // تحديث الحالة إلى انتظار
     setState(() {
       isWaiting = true;
       isDone = false;
     });
 
-    // إنشاء الكائن ModelInfoUser
-    ModelInfoUser modelInfoUser = ModelInfoUser(
-      score: score,
-      massScore: massScore,
-      communionScore: communionScore,
-      confessionScore: confessionScore,
-      meetingScore: meetingScoreDB,
-    );
+    String userId = widget.userId;
 
-    // إضافة البيانات إلى Firebase
-    FirebaseUtils.addData(modelInfoUser).then((value) {
+    if (userId.isEmpty) {
+      print("Error: User ID is empty");
+      setState(() {
+        isWaiting = false;
+      });
+      return;
+    }
+
+    try {
+      // إنشاء الكائن ModelData
+      ModelData modelData = ModelData(
+        score: score,
+        massScore: massScoreDB,
+        communionScore: communionScoreDB,
+        confessionScore: confessionScoreDB,
+        meetingScore: meetingScoreDB,
+      );
+
+      // تحديث البيانات في Firebase
+      await FirebaseUtils.setYearData(
+        modelData: modelData,
+        userId: userId,
+        weekNumber: weekNumber,
+      );
+
       print("Data added successfully!");
 
-      // تحديث الحالة إلى مكتمل
       setState(() {
         isWaiting = false;
         isDone = true;
       });
 
-      // إغلاق المنيو بعد تأخير قصير
+      // تأخير بسيط لإغلاق القائمة
       Future.delayed(const Duration(milliseconds: 650), () {
         widget.onCloseMenu();
       });
-    }).catchError((error) {
+    } catch (error) {
       print("Error adding data: $error");
-
-      // إعادة الحالة إلى الوضع الافتراضي عند حدوث خطأ
       setState(() {
         isWaiting = false;
         isDone = false;
       });
-    });
+
+      // عرض رسالة للمستخدم في حال حدوث خطأ
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error adding data: $error")),
+      );
+    }
   }
-}
+  }
 
 
 

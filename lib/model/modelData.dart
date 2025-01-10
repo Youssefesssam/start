@@ -1,4 +1,4 @@
-class ModelInfoUser {
+class ModelData {
   static const String collection = 'data';
   late int score;
   late int massScore;
@@ -6,20 +6,22 @@ class ModelInfoUser {
   late int confessionScore;
   late int meetingScore;
 
-  ModelInfoUser({
+  ModelData({
     required this.score,
     required this.massScore,
     required this.communionScore,
     required this.confessionScore,
-    required this.meetingScore,
+    required this.meetingScore
   });
 
-  ModelInfoUser.fromJson(Map<String, dynamic> json) {
-    score = json["score"] as int;
-    massScore = json["massScore"] as int;
-    communionScore = json["communionScore"] as int;
-    confessionScore = json["confessionScore"] as int;
-    meetingScore = json["meetingScore"] as int;
+  factory ModelData.fromJson(Map<String, dynamic> data) {
+    return ModelData(
+      score: data['score'] ?? 0,
+      communionScore: data['communionScore'] ?? 0,
+      confessionScore: data['confessionScore'] ?? 0,
+      massScore: data['massScore'] ?? 0,
+      meetingScore: data['meetingScore'] ?? 0,
+    );
   }
 
   Map<String, dynamic> toJson() {

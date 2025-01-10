@@ -35,5 +35,9 @@ static const String planning = 'assets/newIcon/planning.png';
 static const String speech = 'assets/newIcon/speech.png';
 static const String achive = 'assets/newIcon/achive.png';
 static const String achivement = 'assets/newIcon/achivement.png';
+static const String gold = 'assets/newIcon/gold.png';
+static const String silver = 'assets/newIcon/silver.png';
+static const String bronze = 'assets/newIcon/bronze.png';
+static const String crown = 'assets/newIcon/crown.png';
 
 }

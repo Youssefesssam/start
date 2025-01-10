@@ -3,7 +3,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../utilites/appAssets.dart';
 import '../designCard/designCard.dart';
-import 'event/event.dart';
 
 
 class SliderPic extends StatelessWidget {
@@ -27,7 +26,7 @@ class SliderPic extends StatelessWidget {
             child: CarouselSlider(
                 items: pic,
                 options: CarouselOptions(
-                  height: 190,
+                  height: 180,
                   viewportFraction: .4,
                   initialPage: 0,
                   enableInfiniteScroll: true ,

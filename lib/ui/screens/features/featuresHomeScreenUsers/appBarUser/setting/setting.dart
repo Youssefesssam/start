@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../../firebase/ModelInfoUser.dart';
+import '../../../../../../model/modelData.dart';
 import '../../../../../../firebase/firebase.dart';
 
 class Setting extends StatefulWidget {
