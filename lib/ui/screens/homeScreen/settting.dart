@@ -12,10 +12,10 @@ class SettingUser extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor:Colors.brown,
+        backgroundColor:Colors.teal[800],
         title: const Text(
           "Account",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -30,8 +30,8 @@ class SettingUser extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
-                  colors: [ Colors.brown,
-                    Colors.brown, ],
+                  colors: [Colors.teal[800]!,
+                    Colors.teal[800]! ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 )),
@@ -162,7 +162,7 @@ class SettingUser extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isLogout ? Colors.redAccent : Colors.brown,
+              color: isLogout ? Colors.redAccent : Colors.teal,
               size: 28,
             ),
             const SizedBox(width: 16),

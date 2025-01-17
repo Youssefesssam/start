@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class cardStatistics extends StatelessWidget {
-  final String title; // العنوان الرئيسي
-  final int score; // النقاط
-  final String subtitle; // العنوان الفرعي
-  final int mod; // العنوان الفرعي
+  final String title;
+  final int score;
+  final String subtitle;
+  final int mod;
 
   const cardStatistics({
     super.key,
@@ -19,11 +19,12 @@ class cardStatistics extends StatelessWidget {
     return Column(
       children: [
         Container(
+
           padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          margin: const EdgeInsets.only(bottom: 60, left: 10, right: 10),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.deepOrange,Colors.pink,Colors.purple,Colors.indigo,Colors.blue],
+              colors: [Colors.brown,Colors.brown],
                 end: Alignment(1, 2),
             ),
             borderRadius: BorderRadius.all(Radius.circular(20)),
@@ -51,7 +52,7 @@ class cardStatistics extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    subtitle, // العنوان الفرعي
+                    subtitle,
                     style: const TextStyle(
                       fontSize: 20,
                       color: Colors.white,
@@ -61,14 +62,14 @@ class cardStatistics extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                margin: const EdgeInsets.all(40),
+                margin: const EdgeInsets.all(20),
                 child: CircularProgressIndicator(
-                  strokeAlign: 7,
+                  strokeAlign: 3,
                   strokeCap: StrokeCap.round,
-                  value: score / mod, // قيمة النسبة (افتراضًا أن 100 هي الحد الأقصى)
+                  value: score / mod,
                   color: const Color(0xfff9b700),
                   backgroundColor: const Color(0xff868181),
-                  strokeWidth: 10,
+                  strokeWidth: 7,
                 ),
               ),
             ],

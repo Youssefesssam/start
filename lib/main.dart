@@ -49,11 +49,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
+
       initialRoute: HomeScreenUsers.routeName,
       // This trailing comma makes auto-formatting nicer for build methods.
       debugShowCheckedModeBanner: false,
       routes: {
+
         HomeScreenLeaders.routeName: (_) =>   HomeScreenLeaders(),
         HomeScreenUsers.routeName: (_) =>  HomeScreenUsers(),
         SplashScreen.routeName: (_) => const SplashScreen(),
@@ -67,9 +70,9 @@ class MyApp extends StatelessWidget {
         TaskScreen.routeName: (_) => const TaskScreen(),
         ListOfUsers.routeName: (_) =>  ListOfUsers(),
         AttendManual.routeName: (_) => const AttendManual(),
-        Statistics.routeName: (_) =>  Statistics(),
+        Statistics.routeName: (_) =>  const Statistics(),
         Home.routeName: (_) => const Home(),
-        RankPage.routeName: (_) =>  RankPage(),
+        RankPage.routeName: (_) =>  const RankPage(),
         AccountProfile.routeName: (_) =>  AccountProfile(),
       },
     );

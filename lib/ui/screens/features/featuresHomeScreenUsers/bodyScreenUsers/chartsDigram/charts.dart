@@ -22,7 +22,7 @@ class _ChartsState extends State<Charts> {
     StatisticsViewModel statisticsViewModel = Provider.of(context);
 
     return Container(
-      padding: EdgeInsets.only(top: 25,right: 25,left: 25,bottom: 0),
+      padding: const EdgeInsets.only(top: 25,right: 25,left: 25,bottom: 0),
        margin: EdgeInsets.only(top: 10,bottom: 15,left: 10,right: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
@@ -99,7 +99,7 @@ class _ChartsState extends State<Charts> {
                                   getTitlesWidget: (value, meta) {
                                     return Text(
                                       value.toInt().toString(),
-                                      style: const TextStyle(color: Colors.orange),
+                                      style:  TextStyle(color: Colors.teal[800]!),
                                     );
                                   },
                                 ),
@@ -110,13 +110,13 @@ class _ChartsState extends State<Charts> {
                                   getTitlesWidget: (value, meta) {
                                     switch (value.toInt()) {
                                       case 1:
-                                        return const Text('w1', style: TextStyle(color: Colors.deepOrangeAccent));
+                                        return  Text('w1', style: TextStyle(color: Colors.teal[800]!));
                                       case 2:
-                                        return const Text('w2', style: TextStyle(color: Colors.deepOrangeAccent));
+                                        return  Text('w2', style: TextStyle(color: Colors.teal[800]!));
                                       case 3:
-                                        return const Text('w3', style: TextStyle(color: Colors.deepOrangeAccent));
+                                        return  Text('w3', style: TextStyle(color:Colors.teal[800]!));
                                       case 4:
-                                        return const Text('w4', style: TextStyle(color: Colors.deepOrangeAccent));
+                                        return  Text('w4', style: TextStyle(color: Colors.teal[800]!));
                                       default:
                                         return const Text('');
                                     }
@@ -135,7 +135,7 @@ class _ChartsState extends State<Charts> {
                                   toY: fetchedData[0].toDouble(), // الأسبوع الأول
                                   fromY: 0,
                                   width: 7,
-                                  color: Colors.orange,
+                                  color: Color(0xff22886f),
                                   borderRadius: const BorderRadius.only(topRight: Radius.circular(6), topLeft: Radius.circular(6)),
                                 ),
                               ]),
@@ -144,7 +144,7 @@ class _ChartsState extends State<Charts> {
                                   toY: fetchedData[1].toDouble(), // الأسبوع الثاني
                                   fromY: 0,
                                   width: 7,
-                                  color: Colors.blueAccent,
+                                  color: Color(0xff22886f),
                                   borderRadius: const BorderRadius.only(topRight: Radius.circular(6), topLeft: Radius.circular(6)),
                                 ),
                               ]),
@@ -153,7 +153,7 @@ class _ChartsState extends State<Charts> {
                                   toY: fetchedData[2].toDouble(), // الأسبوع الثالث
                                   fromY: 0,
                                   width: 7,
-                                  color: Colors.orange,
+                                  color: Color(0xff22886f),
                                   borderRadius: const BorderRadius.only(topRight: Radius.circular(6), topLeft: Radius.circular(6)),
                                 ),
                               ]),
@@ -162,7 +162,7 @@ class _ChartsState extends State<Charts> {
                                   toY: fetchedData[3].toDouble(), // الأسبوع الرابع
                                   fromY: 0,
                                   width: 7,
-                                  color: Colors.blueAccent,
+                                  color: Color(0xff22886f),
                                   borderRadius: const BorderRadius.only(topRight: Radius.circular(6), topLeft: Radius.circular(6)),
                                 ),
                               ]),

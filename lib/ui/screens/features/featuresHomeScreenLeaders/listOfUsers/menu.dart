@@ -45,7 +45,7 @@ class _MenuState extends State<Menu> {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: const Color(0xe42f2e2e),
+        color: const Color(0xd0777676),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -55,6 +55,7 @@ class _MenuState extends State<Menu> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           buildRow(
@@ -69,53 +70,72 @@ class _MenuState extends State<Menu> {
           buildRow("الاجتماع", isMeetingActive, meetingScore,
               () => toggleState("meeting")),
           const Divider(thickness: 1, color: Colors.white),
-          Row(
+          Column(
             children: [
-              // عرض زر الانتظار أو الإضافة بناءً على الحالة
-              if (isWaiting)
-                Container(
-                    margin: const EdgeInsets.all(10),
-                    child: const CircularProgressIndicator(
-                        color: Colors.blueAccent))
-              else if (isDone)
-                const Icon(Icons.done, color: Colors.green, size: 30)
-              else
-                InkWell(
-                  onTap: (){
-
-                    addScoreUser(
-                        score: totalScore,
-                        meetingScoreDB: meetingScore,
-                        communionScoreDB: communionScore,
-                        confessionScoreDB: confessionScore,
-                        massScoreDB: massScore,
-                        weekNumber: widget.weekNum
-                    );
-                  },
-
-                  child: const Row(
-                    children: [
-                      Icon(Icons.add, color: Colors.blueAccent, size: 30),
-                      SizedBox(width: 10),
-                      Text(
-                        "Add Score",
-                        style:
-                            TextStyle(fontSize: 20, color: Colors.blueAccent),
-                      ),
-                    ],
-                  ),
-                ),
-              const Spacer(),
-              InkWell(
-                onTap: resetScores,
-                child: const Row(
+              Center( // إضافة Center لتوسيط العناصر
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.delete, color: Colors.red, size: 30),
-                    SizedBox(width: 10),
-                    Text(
-                      "Delete Score",
-                      style: TextStyle(fontSize: 20, color: Colors.red),
-                    ),
+                    if (isWaiting)
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        child: const CircularProgressIndicator(
+                          color: Colors.blueAccent,
+                        ),
+                      )
+                    else if (isDone)
+                      const Icon(Icons.done, color: Colors.green, size: 30)
+                    else
+                      Column(
+                        children: [
+                          const SizedBox(height: 20), // مسافة بين الزرين
+
+                          InkWell(
+                            onTap: resetScores,
+                            child: Container(
+                              padding: EdgeInsets.only(left: 20,right: 20,top: 10,bottom: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Text(
+                                "RESET",
+                                style: TextStyle(fontSize: 18, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20), // مسافة بين الزرين
+
+                          InkWell(
+                            onTap: () {
+                              addScoreUser(
+                                score: totalScore,
+                                meetingScoreDB: meetingScore,
+                                communionScoreDB: communionScore,
+                                confessionScoreDB: confessionScore,
+                                massScoreDB: massScore,
+                                weekNumber: widget.weekNum,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 50,right: 50,top: 10,bottom: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.teal,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                "CONFIRM",
+                                style: TextStyle(fontSize: 20, color: Colors.white),
+                              ),
+                            ),
+                          ),
+
+                        ],
+                      ),
                   ],
                 ),
               ),

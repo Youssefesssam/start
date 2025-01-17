@@ -1,10 +1,10 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:star_t/firebase/authProvider.dart';
 import 'package:star_t/firebase/dataProvider.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/appBarUser/appBarUsers/appBarUser.dart';
 import '../../../../../../model/modelData.dart';
 import '../../../../../../model/modelMonth.dart';
 import '../../../../../../model/modelUser.dart';
@@ -64,11 +64,11 @@ class _StatisticsState extends State<Statistics> {
         .collection(ModelData.collection);
 
     return Scaffold(
-      backgroundColor: Colors.black12,
+      backgroundColor: Color(0xfff7eddf),
       body: Column(
         children: [
           Container(
-            margin: EdgeInsets.only(top: 50,bottom: 20),
+            margin: EdgeInsets.only(top: 50,bottom: 20,right: 50,left: 50),
             child: Row(
               children: [
                 Expanded(
@@ -80,7 +80,7 @@ class _StatisticsState extends State<Statistics> {
                           initialItem: selectedMonthIndex),
                       onSelectedItemChanged: (index) {
                         setState(() {
-                          selectedMonthIndex = index; // تحديث الشهر المختار
+                          selectedMonthIndex = index;
                         });
                       },
                       children: month.map((letter) {
@@ -90,7 +90,7 @@ class _StatisticsState extends State<Statistics> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white,
+                              color: Colors.brown,
                             ),
                           ),
                         );
@@ -117,7 +117,7 @@ class _StatisticsState extends State<Statistics> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white,
+                              color: Colors.brown,
                             ),
                           ),
                         );
@@ -134,14 +134,15 @@ class _StatisticsState extends State<Statistics> {
               builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
                 if (streamSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(), // عرض اللودر
+                    child: CircularProgressIndicator(color: Colors.brown,), // عرض اللودر
                   );
                 }
                 if (!streamSnapshot.hasData ||
                     streamSnapshot.data?.docs.isEmpty == true) {
-                  return  const SingleChildScrollView(
+                  return   const SingleChildScrollView(
                     child: Column(
                       children: [
+
                         cardStatistics(
                           mod: 100,
                           title: 'score', // Displaying field name dynamically

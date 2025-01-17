@@ -33,38 +33,59 @@ class _CardUserState extends State<CardUser> {
     DataProvider dataProvider = Provider.of<DataProvider>(context);
 
         return Container(
+          margin: const EdgeInsets.only(left: 5,right: 5),
           padding: const EdgeInsets.only(left: 30, right: 25, top: 0, bottom: 0),
           height: MediaQuery.of(context).size.height * .11,
           width: MediaQuery.of(context).size.width * .9,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(40),
-            gradient: const LinearGradient(
-              colors: [Colors.deepOrange,Colors.pink,Colors.purple,Colors.indigo,Colors.blue],
-              end: Alignment(1, 2),
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                Colors.teal[800]!,
+                Colors.teal[600]!,
+                Colors.cyan[700]!,
+                Colors.cyan[500]!,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               // عرض صورة البروفايل
               Container(
+                padding: EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  gradient: const LinearGradient(
-                      colors: [Colors.deepOrange,Colors.pink,Colors.pinkAccent,Colors.purple],
-                      end: Alignment(1, 2)),
+                  borderRadius: BorderRadius.circular(50),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.teal[800]!,
+                      Colors.teal[600]!,
+                      Colors.cyan[700]!,
+                      Colors.cyan[500]!,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    gradient: const LinearGradient(
-                        colors: [Colors.deepOrange,Colors.pink,Colors.pinkAccent,Colors.purple]),
-                  ),
-                  child: const CircleAvatar(
-                    radius: 35,
-                    backgroundImage: AssetImage(AppAssets.profile),
-                  ),
+                child: const CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage(AppAssets.profile),
                 ),
               ),
               const SizedBox(

@@ -5,15 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:star_t/ui/screens/homeScreen/settting.dart';
 import '../../../firebase/dataProvider.dart';
 import '../../../utilites/appAssets.dart';
-import '../features/featuresHomeScreenUsers/Contents/achive/achive.dart';
-import '../features/featuresHomeScreenUsers/Contents/aword.dart';
-import '../features/featuresHomeScreenUsers/Contents/gift.dart';
-import '../features/featuresHomeScreenUsers/Contents/score.dart';
-import '../features/featuresHomeScreenUsers/appBarUser/appBarUsers/appBarUser.dart';
+import '../features/featuresHomeScreenLeaders/home/ideas.dart';
+import '../features/featuresHomeScreenLeaders/home/opnion.dart';
+import '../features/featuresHomeScreenLeaders/home/team.dart';
+import '../features/featuresHomeScreenLeaders/home/week.dart';
+import '../features/featuresHomeScreenLeaders/home/word.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/rank/rank.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
-import '../features/featuresHomeScreenUsers/bodyScreenUsers/slider/slide.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class HomeScreenUsers extends StatefulWidget {
@@ -25,9 +24,10 @@ class HomeScreenUsers extends StatefulWidget {
   State<HomeScreenUsers> createState() => _HomeScreenUsersState();
 }
 
-class _HomeScreenUsersState extends State<HomeScreenUsers> {
-  String selectedMonth = '01'; // الشهر المحدد
-  bool isRefreshing = false; // حالة التحديث
+class _HomeScreenUsersState extends State<HomeScreenUsers>
+    with SingleTickerProviderStateMixin {
+  String selectedMonth = '01';
+  bool isRefreshing = false;
   final List<String> month = [
     'January',
     'February',
@@ -42,6 +42,35 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
     'November',
     'December',
   ];
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  int selectedWeekIndex = 0;
+  int _currentIndex = 0; // مؤشر الموضع الحالي
+
+  @override
+  void initState() {
+    print('initState called'); // Debug statement
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTap() {
+    _controller.forward().then((_) {
+      _controller.reverse();
+    });
+  }
 
   Future<void> _refreshData() async {
     setState(() {
@@ -49,7 +78,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
     });
 
     // تنفيذ عملية التأخير (مثل تحميل البيانات)
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
 
     setState(() {
       isRefreshing = false; // إيقاف التحديث بعد فترة
@@ -58,79 +87,36 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
 
   @override
   Widget build(BuildContext context) {
-    DataProvider dataProvider = Provider.of<DataProvider>(context);
-    final phone = MediaQuery.of(context).size.width < 600;
-    List<Widget> content = [
-      Container(
-        margin: EdgeInsets.all(10),
-        child: Score(
-          color: Colors.black,
-          path: AppAssets.bestScore,
-          titleCard: "Score",
-          numNatification: 3,
-          colorNatification: Colors.orange,
-          appearNatification: false,
-          selectedMonth: selectedMonth,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.all(10),
-        child: Aword(
-          color: Colors.black,
-          path: AppAssets.speech,
-          titleCard: "Weekly word",
-          numNatification: 8,
-          colorNatification: Color(0xffe8bb80),
-          appearNatification: true,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.all(10),
-        child: Gift(
-          color: Colors.black,
-          path: AppAssets.giftCard,
-          titleCard: "Gift",
-          numNatification: 1,
-          colorNatification: Colors.orange,
-          appearNatification: true,
-        ),
-      ),
-      Container(
-        margin: EdgeInsets.all(10),
-        child: Achive(
-          color: Colors.black,
-          path: AppAssets.achivement,
-          titleCard: "Achive",
-          numNatification: 8,
-          colorNatification: Colors.orange,
-          appearNatification: true,
-        ),
-      ),
+    final List<Widget> pic = [
+      _buildContentWidget("general"),
+      _buildContentWidget("puplic"),
+      _buildContentWidget("team"),
+      _buildContentWidget("connection"),
     ];
 
+    DataProvider dataProvider = Provider.of<DataProvider>(context);
+    final isTablet = MediaQuery.of(context).size.width > 600; // تحديد إذا كان الجهاز تاب
+
     return Scaffold(
-      backgroundColor: Color(0xfff7eddf),
+      backgroundColor: Colors.transparent,
       body: NotificationListener<ScrollNotification>(
         onNotification: (scrollNotification) {
-          // تحقق من حالة السحب لأسفل
           if (scrollNotification is ScrollUpdateNotification) {
             if (scrollNotification.metrics.pixels <= 0) {
               setState(() {
-                isRefreshing = true; // تفعيل حالة التحديث عند السحب
+                isRefreshing = true;
               });
-
-              // تنفيذ عملية التأخير (مثل تحميل البيانات)
-              Future.delayed(Duration(seconds: 3), () {
+              Future.delayed(const Duration(seconds: 3), () {
                 setState(() {
-                  isRefreshing = false; // إيقاف التحديث بعد فترة
+                  isRefreshing = false;
                 });
               });
             }
           }
-          return false; // يسمح ببقية السلوك الطبيعي
+          return false;
         },
         child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(), // السماح بالسحب دائمًا
+          physics: const BouncingScrollPhysics(), // السماح بالسحب دائمًا
           child: Stack(
             children: [
               Column(
@@ -139,87 +125,88 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
                   // إظهار صورة عند السحب لأسفل
                     Center(
                       child: Container(
-                        margin: EdgeInsets.all(20),
-                        height: 80,
+                          margin: const EdgeInsets.all(20),
+                          height: 80,
                           width: 80,
-                          child: Icon(Icons.refresh,size: 50,)),
+                          child: const Icon(
+                            Icons.refresh,
+                            size: 50,
+                          )),
                     ),
                   Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0x15e7ba7f),
-                          Color(0x41e7ba7f)],
+                        colors: [Colors.teal[900]!, Colors.grey[900]!],
                         begin: Alignment.bottomCenter,
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const AppBarUser(),
-                        SizedBox(
-                          height: 260,
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: isTablet
+                              ? MediaQuery.of(context).size.height * 0.3
+                              : MediaQuery.of(context).size.height * 0.2,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.teal[800]!, Colors.teal[800]!],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(50),
+                                bottomRight: Radius.circular(50)),
+                          ),
                         ),
-                        Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 20, bottom: 20),
-                              child: Text(
-                                'Content',
-                                style: GoogleFonts.aclonica(fontSize: 25, color: Colors.brown),
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(left: 5, bottom: 20),
-                              child: Image.asset(
-                                AppAssets.content,
-                                height: 30,
-                                width: 40,
-                                color: Colors.brown,
-                              ),
-                            ),
-                          ],
+                        SizedBox(
+                          height: isTablet
+                              ? MediaQuery.of(context).size.height * 0.25
+                              : MediaQuery.of(context).size.height * 0.31,
                         ),
                         Column(
                           children: [
+                            // السلايدر
                             CarouselSlider(
-                                items: content,
-                                options: CarouselOptions(
-                                  height: 160,
-                                  viewportFraction: .4,
-                                  initialPage: 0,
-                                  enableInfiniteScroll: true,
-                                  autoPlay: false,
-                                  autoPlayInterval: const Duration(seconds: 2),
-                                  autoPlayAnimationDuration:
-                                  const Duration(seconds: 2),
-                                  autoPlayCurve: Curves.easeInOut,
-                                  enlargeCenterPage: true,
-                                  enlargeFactor: 0.3,
-                                  scrollDirection: Axis.horizontal,
-                                )),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 20),
-                              child:  Text(
-                                'General Content',
-                                style: GoogleFonts.aclonica(fontSize: 25, color: Colors.brown),
+                              items: pic,
+                              options: CarouselOptions(
+                                height: isTablet
+                                    ? MediaQuery.of(context).size.height * 0.6
+                                    : MediaQuery.of(context).size.height * 0.47,
+                                viewportFraction: 1.0, // عرض العنصر بالكامل
+                                initialPage: 0,
+                                enableInfiniteScroll: true,
+                                autoPlay: false,
+                                autoPlayInterval: const Duration(seconds: 2),
+                                autoPlayAnimationDuration: const Duration(seconds: 2),
+                                autoPlayCurve: Curves.easeInOut,
+                                enlargeCenterPage: false, // تعطيل تكبير العنصر في المنتصف
+                                scrollDirection: Axis.horizontal,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    _currentIndex = index; // تحديث الموضع الحالي
+                                  });
+                                },
                               ),
                             ),
-                            Container(
-                              margin: const EdgeInsets.only(left: 5),
-                              child: Image.asset(
-                                AppAssets.content,
-                                height: 30,
-                                width: 40,
-                                color: Colors.brown,
-                              ),
+                            // مسافة بين السلايدر والنقاط
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                  pic.length, (index) {
+                                return Container(
+                                  width: 8,
+                                  height: 8,
+                                  margin: EdgeInsets.only(bottom: 20, right: 5),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _currentIndex == index ? Colors.blue : Colors.grey,
+                                  ),
+                                );
+                              }),
                             ),
                           ],
                         ),
-                        SliderPic(),
                       ],
                     ),
                   ),
@@ -230,16 +217,12 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
                   left: 20,
                   right: 20,
                   child: Container(
-
-                    width: 100,
+                    width: MediaQuery.of(context).size.width * 0.9,
                     height: 350,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [ Colors.white,  Colors.white],
-                        end: Alignment.topCenter,
-                      ),
+                      color: Color(0xffffffff),
                       borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,
@@ -248,14 +231,13 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
                       ],
                     ),
                     child: Container(
-                        margin: EdgeInsets.only(top: 30, right: 20),
+                        margin: const EdgeInsets.only(top: 30, right: 20),
                         child: Charts(selectedmonth: selectedMonth)),
                   )),
-              Positioned(
+              const Positioned(
                 top: 30,
                 left: 30,
                 child: CircleAvatar(
-
                   radius: 50,
                   backgroundImage: AssetImage(AppAssets.profile),
                 ),
@@ -270,18 +252,26 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
                       children: [
                         Text(
                           "User Name",
-                          style: GoogleFonts.aclonica(fontSize: 20, color: Colors.white, letterSpacing: 1.2,),
+                          style: GoogleFonts.aclonica(
+                            fontSize: isTablet ? 24 : 20,
+                            color: Colors.white,
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                        SizedBox(height: 5),
+                        const SizedBox(height: 5),
                         Text(
                           "User Bio or Description ",
-                          style: GoogleFonts.aclonica(fontSize: 12, color: Colors.white70, letterSpacing: 1.2,),
+                          style: GoogleFonts.aclonica(
+                            fontSize: isTablet ? 16 : 12,
+                            color: Colors.white70,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(width: 25),
+                    const SizedBox(width: 25),
                     IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.edit,
                         color: Colors.white,
                         size: 30,
@@ -336,68 +326,80 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
                   right: -30,
                   child: Column(
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       Container(
-                          padding: EdgeInsets.only(right: 70, top: 10, left: 10, bottom: 10),
+                          padding: const EdgeInsets.only(
+                              right: 70, top: 10, left: 10, bottom: 10),
                           decoration: BoxDecoration(
-                              color: Color(0xbede9436),
+                              color: Colors.teal[800]!,
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(5),
                                   bottomLeft: Radius.circular(5))),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Rank#",
-                                style: GoogleFonts.aclonica(fontSize: 15, color: Colors.white, letterSpacing: 1.2,),
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, RankPage.routeName);
-                                },
-                                child: Text(
-                                  "#1",
-                                  style: GoogleFonts.aclonica(fontSize: 30, color: Colors.white, letterSpacing: 1.2,),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(context, RankPage.routeName);
+                            },
+                            child: Column(
+                              children: [
+                                Text(
+                                  "Rank#",
+                                  style: GoogleFonts.aclonica(
+                                    fontSize: isTablet ? 20 : 15,
+                                    color: Colors.white,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  "#1",
+                                  style: GoogleFonts.aclonica(
+                                    fontSize: isTablet ? 40 : 30,
+                                    color: Colors.white,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                           )),
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       Container(
-                        padding: EdgeInsets.only(right: 45, top: 10, left: 10, bottom: 10),
+                        padding: const EdgeInsets.only(
+                            right: 45, top: 10, left: 10, bottom: 10),
                         decoration: BoxDecoration(
-                            color: Color(0xbdde9436),
+                            color: Colors.teal[800]!,
                             borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(5),
                                 bottomLeft: Radius.circular(5))),
-                        child: Column(
-                          children: [
-                            Text(
-                              "Statistics",
-                              style: GoogleFonts.aclonica(fontSize: 15, color: Colors.white, letterSpacing: 1.2,),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, Statistics.routeName);
-                              },
-                              child: CircularProgressIndicator(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(context, Statistics.routeName);
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                "Statistics",
+                                style: GoogleFonts.aclonica(
+                                  fontSize: isTablet ? 20 : 15,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              const CircularProgressIndicator(
                                 strokeCap: StrokeCap.round,
                                 value: 2.0,
                                 // هنا وضعنا 0.0 في حالة انتظار الداتا
-                                color: Colors.brown,
+                                color: Colors.white,
                                 backgroundColor: Colors.white54,
                                 strokeWidth: 5,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -406,6 +408,265 @@ class _HomeScreenUsersState extends State<HomeScreenUsers> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildContentWidget(String head) {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.only(left: 20, top: 0, right: 10, bottom: 0),
+            child: Text(
+              head,
+              style: GoogleFonts.aboreto(color: Colors.white, fontSize: 40),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: buildOption('IDeas', Icons.lightbulb_outline, () {
+                  _onTap();
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    isDismissible: true,
+                    backgroundColor: Colors.transparent,
+                    context: context,
+                    builder: (context) => Ideas(),
+                  );
+                }),
+              ),
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: InkWell(
+                  onTap: () async {
+                    final selectedIndex = await showModalBottomSheet<int>(
+                      isScrollControlled: true,
+                      isDismissible: true,
+                      backgroundColor: Colors.transparent,
+                      context: context,
+                      builder: (context) => Week(),
+                    );
+
+                    if (selectedIndex != null) {
+                      setState(() {
+                        selectedWeekIndex = selectedIndex + 1; // +1 لأن الأسابيع تبدأ من 1
+                      });
+                    }
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(10),
+                    height: 90,
+                    width: 90,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.teal[800]!,
+                          Colors.teal[600]!,
+                          Colors.cyan[700]!,
+                          Colors.cyan[500]!,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$selectedWeekIndex',
+                          style: GoogleFonts.aclonica(
+                            fontSize: 50,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          "week",
+                          style: GoogleFonts.aclonica(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                child: buildOption('Opinion', Icons.comment, () {
+                  _onTap();
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    isDismissible: true,
+                    backgroundColor: Colors.transparent,
+                    context: context,
+                    builder: (context) => Padding(
+                      padding: MediaQuery.of(context).viewInsets,
+                      child: Opinion(),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: buildOption("TALKEN", Icons.chat, () {
+                  _onTap();
+                }),
+              ),
+              Flexible(
+                child: buildOption("Word", Icons.text_fields, () {
+                  _onTap();
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    isDismissible: true,
+                    backgroundColor: Colors.transparent,
+                    context: context,
+                    builder: (context) => Padding(
+                      padding: MediaQuery.of(context).viewInsets,
+                      child: Word(),
+                    ),
+                  );
+                }),
+              ),
+              Flexible(
+                child: buildOption("Team", Icons.group, () {
+                  _onTap();
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    isDismissible: true,
+                    backgroundColor: Colors.transparent,
+                    context: context,
+                    builder: (context) => _buildDraggableScrollableSheet(Team()),
+                  );
+                }),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: buildOption("Task", Icons.assignment, () {
+                  _onTap();
+                }),
+              ),
+              Flexible(
+                child: buildOption("Event", Icons.event, () {
+                  _onTap();
+                }),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildOption(String optionName, IconData icon, VoidCallback onTap) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(10),
+          height: 85,
+          width: 85,
+          decoration: BoxDecoration(
+            color: Color(0xfffcfcfc),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 40,
+                color: Colors.teal,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                optionName,
+                style: GoogleFonts.aclonica(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  DraggableScrollableSheet _buildDraggableScrollableSheet(Widget nameWidget) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.4,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      snap: true,
+      snapSizes: const [0.4, 0.6, 0.9],
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20),
+            ),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                ),
+                nameWidget,
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

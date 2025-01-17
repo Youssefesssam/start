@@ -13,7 +13,6 @@ class AccountProfile extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            AppBarUser(),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
