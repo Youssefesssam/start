@@ -26,6 +26,7 @@ class AccountProfile extends StatelessWidget {
                       color: Colors.grey,
                     ),
                   ),
+
                   SizedBox(height: 10,),
                   Container(
                     height: 250,

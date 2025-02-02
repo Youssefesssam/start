@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/ideas.dart';
+import 'package:provider/provider.dart';
+import 'package:star_t/firebase/dataProvider.dart';
+import 'package:star_t/firebase/firebase.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/opnion.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/sweetTalk.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/task.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/team.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/week.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/word.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/eventUser.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/ideasUser.dart';
+import 'package:star_t/utilites/appColors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../../../model/modelSweetTalk.dart';
+import 'event.dart';
 
 class Home extends StatefulWidget {
   static const String routeName = "home";
@@ -18,18 +29,15 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  int selectedWeekIndex = 0;
+  int? lastSelectedWeek; // متغير لحفظ آخر قيمة
 
   @override
   void initState() {
     super.initState();
-    // تهيئة AnimationController
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-
-    // تهيئة ScaleAnimation
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
@@ -37,7 +45,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    _controller.dispose(); // التخلص من الـ AnimationController
+    _controller.dispose();
     super.dispose();
   }
 
@@ -47,18 +55,17 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+    DataProvider dataProvider = Provider.of(context);
     return Scaffold(
       backgroundColor: Colors.grey[900],
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.teal[800]!,
-              Colors.grey[900]!,
-              Colors.grey[900]!,
-            ],
+            colors: AppColors.backGround,
             begin: Alignment.bottomCenter,
           ),
         ),
@@ -90,29 +97,17 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                             isDismissible: true,
                             backgroundColor: Colors.transparent,
                             context: context,
-                            builder: (context) => Week(),
+                            builder: (context) => Week(currentSelectedWeek: lastSelectedWeek!,),
                           );
-
-                          if (selectedIndex != null) {
-                            setState(() {
-                              selectedWeekIndex = selectedIndex +
-                                  1; // +1 لأن الأسابيع تبدأ من 1
-                            });
-                          }
                         },
                         child: Container(
-                          margin: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.all(30),
                           height: 120,
                           width: 120,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             gradient: LinearGradient(
-                              colors: [
-                                Colors.teal[800]!,
-                                Colors.teal[600]!,
-                                Colors.cyan[700]!,
-                                Colors.cyan[500]!,
-                              ],
+                              colors: AppColors.smoothColorTeal,
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -124,27 +119,88 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$selectedWeekIndex',
-                                style: GoogleFonts.aclonica(
-                                  fontSize: 60,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                "week",
-                                style: GoogleFonts.aclonica(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                          child: StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseUtils.currentWeek(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                // عرض آخر قيمة تم اختيارها
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "${lastSelectedWeek ?? 0}",
+                                      // إذا lastSelectedWeek == null، نعرض 0
+                                      style: GoogleFonts.abyssinicaSil(
+                                        fontSize: 50,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Week",
+                                      style: GoogleFonts.abyssinicaSil(
+                                        fontSize: 30,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "${lastSelectedWeek ?? 0}",
+                                      // إذا lastSelectedWeek == null، نعرض 0
+                                      style: GoogleFonts.abyssinicaSil(
+                                        fontSize: 50,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Week",
+                                      style: GoogleFonts.abyssinicaSil(
+                                        fontSize: 30,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              final weekNumber =
+                              snapshot.data!['weekNumber'] as int;
+                              lastSelectedWeek =
+                                  weekNumber; // حفظ القيمة الجديدة
+                              dataProvider.currentWeekNum = weekNumber;
+                              return Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "$weekNumber",
+                                    style: GoogleFonts.aclonica(
+                                      fontSize: 35,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Week",
+                                    style: GoogleFonts.abyssinicaSil(
+                                      fontSize: 25,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -154,14 +210,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       children: [
                         Flexible(
                           child:
-                              buildOption('IDeas', Icons.lightbulb_outline, () {
+                          buildOption('IDeas', Icons.lightbulb_outline, () {
                             _onTap();
                             showModalBottomSheet(
                               isScrollControlled: true,
                               isDismissible: true,
                               backgroundColor: Colors.transparent,
                               context: context,
-                              builder: (context) => Ideas(),
+                              builder: (context) => IdeasUser(),
                             );
                           }),
                         ),
@@ -191,8 +247,18 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Flexible(
-                          child: buildOption("TALKEN", Icons.chat, () {
+                          child: buildOption(" SweetTalk", Icons.favorite_border, () {
                             _onTap();
+                            showModalBottomSheet(
+                              isScrollControlled: true,
+                              isDismissible: true,
+                              backgroundColor: Colors.transparent,
+                              context: context,
+                              builder: (context) => Padding(
+                                padding: MediaQuery.of(context).viewInsets,
+                                child: SweetTalk(),
+                              ),
+                            );
                           }),
                         ),
                         Flexible(
@@ -231,11 +297,31 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                         Flexible(
                           child: buildOption("Task", Icons.assignment, () {
                             _onTap();
+                            showModalBottomSheet(
+                              isScrollControlled: true,
+                              isDismissible: true,
+                              backgroundColor: Colors.transparent,
+                              context: context,
+                              builder: (context) => Padding(
+                                padding: MediaQuery.of(context).viewInsets,
+                                child: Task(),
+                              ),
+                            );
                           }),
                         ),
                         Flexible(
                           child: buildOption("Event", Icons.event, () {
                             _onTap();
+                            showModalBottomSheet(
+                              isScrollControlled: true,
+                              isDismissible: true,
+                              backgroundColor: Colors.transparent,
+                              context: context,
+                              builder: (context) => Padding(
+                                padding: MediaQuery.of(context).viewInsets,
+                                child: Event(),
+                              ),
+                            );
                           }),
                         ),
                       ],
@@ -275,18 +361,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             children: [
               Icon(
                 icon,
-                size: 40,
+                size: MediaQuery.of(context).size.width * 0.08,
                 color: Colors.teal,
               ),
               const SizedBox(height: 10),
               Text(
                 optionName,
-                style: GoogleFonts.aclonica(
-                  fontSize: 18,
+                style: GoogleFonts.abyssinicaSil(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
             ],
           ),
         ),
@@ -296,16 +383,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   DraggableScrollableSheet _buildDraggableScrollableSheet(Widget nameWidget) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.4,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.9,
       snap: true,
       snapSizes: const [0.4, 0.6, 0.9],
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20),
             ),
           ),
@@ -318,14 +405,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   height: 5,
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: AppColors.lightgrey,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(50),
                       topRight: Radius.circular(50),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: AppColors.black.withOpacity(0.2),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -333,6 +420,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   ),
                 ),
                 nameWidget,
+
               ],
             ),
           ),

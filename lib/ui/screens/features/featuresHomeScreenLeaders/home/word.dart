@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:star_t/firebase/firebase.dart';
 
-class Word extends StatelessWidget {
+class Word extends StatefulWidget {
   const Word({super.key});
+
+  @override
+  _WordState createState() => _WordState();
+}
+
+class _WordState extends State<Word> {
+  final TextEditingController wordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +37,7 @@ class Word extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              // خط أعلى الصفحة
               Container(
                 height: 4,
                 width: 50,
@@ -38,109 +46,171 @@ class Word extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // العنوان
-              Text(
-                "Write the word that will be said next week",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal[800],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-
-              // حقل إدخال النص
-              TextField(
-                maxLines: 5,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: 'Type your opinion here...',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-                style: const TextStyle(color: Colors.black87),
-              ),
-              const SizedBox(height: 30),
-
-              // أزرار الإجراءات
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // زر الخروج
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: 120,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: Colors.red,
-                          width: 1.5,
+                  // شريط أعلى الصفحة
+
+                  const SizedBox(height: 20),
+
+                  // العنوان
+                  Text(
+                    "Write the word",
+                    style: GoogleFonts.aclonica(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal[800],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // جلب آخر كلمة مخزنة
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('word').orderBy('Time', descending: true).limit(1).snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(child: CircularProgressIndicator(color: Colors.teal));
+                      }
+                      var docs = snapshot.data!.docs;
+                      String lastMessage = docs.isNotEmpty ? docs.first['message'] : "No words yet";
+
+                      return Card(
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                         ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Exit',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Latest Word:',
+                                style: GoogleFonts.abyssinicaSil(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                lastMessage,
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.teal,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
 
-                  // زر المشاركة
-                  InkWell(
-                    onTap: () {
-                      // Add your sharing logic here
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      width: 120,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        gradient: LinearGradient(
-                          colors: [Colors.teal[800]!, Colors.teal[600]!],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.teal.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                  const SizedBox(height: 10),
+
+                  // حقل إدخال النص
+                  TextField(
+                    controller: wordController,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
                       ),
-                      child: const Center(
-                        child: Text(
-                          'Share',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      hintText: 'Type your word say next week here...',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      contentPadding: const EdgeInsets.all(16),
                     ),
+                    style: const TextStyle(color: Colors.black87),
                   ),
+                  const SizedBox(height: 30),
+
+                  // أزرار الإجراءات
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // زر الخروج
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: 120,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.red,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Exit',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // زر المشاركة
+                      InkWell(
+                        onTap: () async {
+                          await FirebaseUtils.sendWord(
+                            message: wordController.text,
+                            sender: "tina",
+                          );
+                          wordController.clear();
+                        },
+                        child: Container(
+                          width: 120,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            gradient: LinearGradient(
+                              colors: [Colors.teal[800]!, Colors.teal[600]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.teal.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Share',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),

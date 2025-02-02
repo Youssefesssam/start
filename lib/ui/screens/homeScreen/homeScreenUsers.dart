@@ -2,18 +2,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/sweetTalkUser.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/taskUser.dart';
 import 'package:star_t/ui/screens/homeScreen/settting.dart';
+import 'package:star_t/utilites/appColors.dart';
 import '../../../firebase/dataProvider.dart';
 import '../../../utilites/appAssets.dart';
-import '../features/featuresHomeScreenLeaders/home/ideas.dart';
-import '../features/featuresHomeScreenLeaders/home/opnion.dart';
-import '../features/featuresHomeScreenLeaders/home/team.dart';
-import '../features/featuresHomeScreenLeaders/home/week.dart';
-import '../features/featuresHomeScreenLeaders/home/word.dart';
+import '../features/featuresHomeScreenUsers/Contents/compettion/natification/natification.dart';
+import '../features/featuresHomeScreenUsers/Contents/compettion/score.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/eventUser.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/ideasUser.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/opnionUser.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/teamUser.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/weekUser.dart';
+import '../features/featuresHomeScreenUsers/Contents/general/wordUser.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/rank/rank.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 import '../features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreenUsers extends StatefulWidget {
   HomeScreenUsers({super.key});
@@ -45,7 +52,8 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   int selectedWeekIndex = 0;
-  int _currentIndex = 0; // مؤشر الموضع الحالي
+  int _currentIndex = 0;
+  int? lastSelectedWeek; // متغير لحفظ آخر قيمة
 
   @override
   void initState() {
@@ -74,28 +82,25 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
 
   Future<void> _refreshData() async {
     setState(() {
-      isRefreshing = true; // تفعيل حالة التحديث عند السحب لأسفل
+      isRefreshing = true;
     });
 
-    // تنفيذ عملية التأخير (مثل تحميل البيانات)
     await Future.delayed(const Duration(seconds: 3));
 
     setState(() {
-      isRefreshing = false; // إيقاف التحديث بعد فترة
+      isRefreshing = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    DataProvider dataProvider = Provider.of(context);
     final List<Widget> pic = [
-      _buildContentWidget("general"),
-      _buildContentWidget("puplic"),
-      _buildContentWidget("team"),
-      _buildContentWidget("connection"),
+      general("general"),
+      competition("competition"),
     ];
 
-    DataProvider dataProvider = Provider.of<DataProvider>(context);
-    final isTablet = MediaQuery.of(context).size.width > 600; // تحديد إذا كان الجهاز تاب
+    final isTablet = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -116,13 +121,12 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
           return false;
         },
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(), // السماح بالسحب دائمًا
+          physics: const BouncingScrollPhysics(),
           child: Stack(
             children: [
               Column(
                 children: [
                   if (isRefreshing)
-                  // إظهار صورة عند السحب لأسفل
                     Center(
                       child: Container(
                           margin: const EdgeInsets.all(20),
@@ -136,7 +140,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.teal[900]!, Colors.grey[900]!],
+                        colors: AppColors.backGround,
                         begin: Alignment.bottomCenter,
                       ),
                     ),
@@ -150,11 +154,11 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                               : MediaQuery.of(context).size.height * 0.2,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [Colors.teal[800]!, Colors.teal[800]!],
+                              colors: AppColors.appBarColor,
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(50),
                                 bottomRight: Radius.circular(50)),
                           ),
@@ -162,45 +166,46 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                         SizedBox(
                           height: isTablet
                               ? MediaQuery.of(context).size.height * 0.25
-                              : MediaQuery.of(context).size.height * 0.31,
+                              : MediaQuery.of(context).size.height * 0.33,
                         ),
                         Column(
                           children: [
-                            // السلايدر
                             CarouselSlider(
                               items: pic,
                               options: CarouselOptions(
                                 height: isTablet
                                     ? MediaQuery.of(context).size.height * 0.6
-                                    : MediaQuery.of(context).size.height * 0.47,
-                                viewportFraction: 1.0, // عرض العنصر بالكامل
+                                    : MediaQuery.of(context).size.height * 0.45,
+                                viewportFraction: 1.0,
                                 initialPage: 0,
                                 enableInfiniteScroll: true,
                                 autoPlay: false,
                                 autoPlayInterval: const Duration(seconds: 2),
-                                autoPlayAnimationDuration: const Duration(seconds: 2),
+                                autoPlayAnimationDuration:
+                                const Duration(seconds: 2),
                                 autoPlayCurve: Curves.easeInOut,
-                                enlargeCenterPage: false, // تعطيل تكبير العنصر في المنتصف
+                                enlargeCenterPage: false,
                                 scrollDirection: Axis.horizontal,
                                 onPageChanged: (index, reason) {
                                   setState(() {
-                                    _currentIndex = index; // تحديث الموضع الحالي
+                                    _currentIndex = index;
                                   });
                                 },
                               ),
                             ),
-                            // مسافة بين السلايدر والنقاط
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                  pic.length, (index) {
+                              children: List.generate(pic.length, (index) {
                                 return Container(
                                   width: 8,
                                   height: 8,
-                                  margin: EdgeInsets.only(bottom: 20, right: 5),
+                                  margin: const EdgeInsets.only(
+                                      bottom: 20, right: 5),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: _currentIndex == index ? Colors.blue : Colors.grey,
+                                    color: _currentIndex == index
+                                        ? AppColors.mainColor
+                                        : AppColors.darkgrey,
                                   ),
                                 );
                               }),
@@ -220,7 +225,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                     width: MediaQuery.of(context).size.width * 0.9,
                     height: 350,
                     decoration: BoxDecoration(
-                      color: Color(0xffffffff),
+                      color: AppColors.white,
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: const [
                         BoxShadow(
@@ -254,7 +259,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                           "User Name",
                           style: GoogleFonts.aclonica(
                             fontSize: isTablet ? 24 : 20,
-                            color: Colors.white,
+                            color: AppColors.white,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -271,9 +276,9 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                     ),
                     const SizedBox(width: 25),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.edit,
-                        color: Colors.white,
+                        color: AppColors.white,
                         size: 30,
                       ),
                       onPressed: () {
@@ -295,8 +300,9 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                         width: 85,
                         child: CupertinoPicker(
                           itemExtent: 20,
-                          scrollController:
-                          FixedExtentScrollController(initialItem: 1),
+                          scrollController: FixedExtentScrollController(
+                              initialItem:
+                              ((dataProvider.currentWeekNum - 1) ~/ 4)),
                           onSelectedItemChanged: (index) {
                             setState(() {
                               selectedMonth =
@@ -307,10 +313,10 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                             return Center(
                               child: Text(
                                 letter,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.black,
+                                  color: AppColors.black,
                                 ),
                               ),
                             );
@@ -333,8 +339,8 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                           padding: const EdgeInsets.only(
                               right: 70, top: 10, left: 10, bottom: 10),
                           decoration: BoxDecoration(
-                              color: Colors.teal[800]!,
-                              borderRadius: BorderRadius.only(
+                              color: AppColors.secColor,
+                              borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(5),
                                   bottomLeft: Radius.circular(5))),
                           child: InkWell(
@@ -347,7 +353,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                                   "Rank#",
                                   style: GoogleFonts.aclonica(
                                     fontSize: isTablet ? 20 : 15,
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     letterSpacing: 1.2,
                                   ),
                                 ),
@@ -355,7 +361,7 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                                   "#1",
                                   style: GoogleFonts.aclonica(
                                     fontSize: isTablet ? 40 : 30,
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                     letterSpacing: 1.2,
                                   ),
                                 ),
@@ -369,8 +375,8 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                         padding: const EdgeInsets.only(
                             right: 45, top: 10, left: 10, bottom: 10),
                         decoration: BoxDecoration(
-                            color: Colors.teal[800]!,
-                            borderRadius: BorderRadius.only(
+                            color: AppColors.secColor,
+                            borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(5),
                                 bottomLeft: Radius.circular(5))),
                         child: InkWell(
@@ -380,22 +386,21 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                           child: Column(
                             children: [
                               Text(
-                                "Statistics",
+                                "Analycse",
                                 style: GoogleFonts.aclonica(
                                   fontSize: isTablet ? 20 : 15,
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   letterSpacing: 1.2,
                                 ),
                               ),
                               const SizedBox(
                                 height: 10,
                               ),
-                              const CircularProgressIndicator(
+                              CircularProgressIndicator(
                                 strokeCap: StrokeCap.round,
                                 value: 2.0,
-                                // هنا وضعنا 0.0 في حالة انتظار الداتا
-                                color: Colors.white,
-                                backgroundColor: Colors.white54,
+                                color: AppColors.white,
+                                backgroundColor: AppColors.lightgrey,
                                 strokeWidth: 5,
                               ),
                             ],
@@ -411,185 +416,261 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
     );
   }
 
-  Widget _buildContentWidget(String head) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            margin: EdgeInsets.only(left: 20, top: 0, right: 10, bottom: 0),
-            child: Text(
-              head,
-              style: GoogleFonts.aboreto(color: Colors.white, fontSize: 40),
-            ),
+  Widget general(String head) {
+    DataProvider dataProvider = Provider.of<DataProvider>(context);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(left: 20, top: 0, right: 10, bottom: 0),
+          child: Text(
+            head,
+            style: GoogleFonts.aboreto(
+                color: AppColors.white,
+                fontSize: MediaQuery.sizeOf(context).width * 0.08),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: buildOption('IDeas', Icons.lightbulb_outline, () {
-                  _onTap();
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    backgroundColor: Colors.transparent,
-                    context: context,
-                    builder: (context) => Ideas(),
-                  );
-                }),
-              ),
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: InkWell(
-                  onTap: () async {
-                    final selectedIndex = await showModalBottomSheet<int>(
-                      isScrollControlled: true,
-                      isDismissible: true,
-                      backgroundColor: Colors.transparent,
-                      context: context,
-                      builder: (context) => Week(),
-                    );
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Optiongeneral('IDeas', Icons.lightbulb_outline, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => IdeasUser(),
+                );
+              }),
+            ),
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: InkWell(
+                onTap: () async {
+                  WeekUser();
 
-                    if (selectedIndex != null) {
-                      setState(() {
-                        selectedWeekIndex = selectedIndex + 1; // +1 لأن الأسابيع تبدأ من 1
-                      });
-                    }
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(10),
-                    height: 90,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.teal[800]!,
-                          Colors.teal[600]!,
-                          Colors.cyan[700]!,
-                          Colors.cyan[500]!,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(10),
+                  height: MediaQuery.of(context).size.width * 0.25,
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: AppColors.smoothColorTeal,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$selectedWeekIndex',
-                          style: GoogleFonts.aclonica(
-                            fontSize: 50,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  child: StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('settings')
+                        .doc('currentWeek')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${lastSelectedWeek ?? 0}",
+                              style: GoogleFonts.aclonica(
+                                fontSize:
+                                MediaQuery.of(context).size.width * 0.09,
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                                height:
+                                MediaQuery.of(context).size.width * 0.005),
+                            Text(
+                              "week",
+                              style: GoogleFonts.aclonica(
+                                fontSize:
+                                MediaQuery.of(context).size.width * 0.03,
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${lastSelectedWeek ?? 0}",
+                              style: GoogleFonts.aclonica(
+                                fontSize:
+                                MediaQuery.of(context).size.width * 0.09,
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                                height:
+                                MediaQuery.of(context).size.width * 0.005),
+                            Text(
+                              "week",
+                              style: GoogleFonts.aclonica(
+                                fontSize:
+                                MediaQuery.of(context).size.width * 0.03,
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      final weekNumber = snapshot.data!['weekNumber'] as int;
+                      lastSelectedWeek = weekNumber;
+
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "$weekNumber",
+                            style: GoogleFonts.aclonica(
+                              fontSize: MediaQuery.of(context).size.width * 0.09,
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "week",
-                          style: GoogleFonts.aclonica(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                          SizedBox(
+                              height: MediaQuery.of(context).size.width * 0.005),
+                          Text(
+                            "week",
+                            style: GoogleFonts.aclonica(
+                              fontSize: MediaQuery.of(context).size.width * 0.03,
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
-              Flexible(
-                child: buildOption('Opinion', Icons.comment, () {
-                  _onTap();
-                  showModalBottomSheet(
+            ),
+            Flexible(
+              child: Optiongeneral('Opinion', Icons.comment, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => Padding(
+                    padding: MediaQuery.of(context).viewInsets,
+                    child: OpinionUser(),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Optiongeneral("Sweet Talk", Icons.favorite_border, () {
+                _onTap();
+                showModalBottomSheet(
                     isScrollControlled: true,
                     isDismissible: true,
                     backgroundColor: Colors.transparent,
                     context: context,
-                    builder: (context) => Padding(
-                      padding: MediaQuery.of(context).viewInsets,
-                      child: Opinion(),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: buildOption("TALKEN", Icons.chat, () {
-                  _onTap();
-                }),
-              ),
-              Flexible(
-                child: buildOption("Word", Icons.text_fields, () {
-                  _onTap();
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    backgroundColor: Colors.transparent,
-                    context: context,
-                    builder: (context) => Padding(
-                      padding: MediaQuery.of(context).viewInsets,
-                      child: Word(),
-                    ),
-                  );
-                }),
-              ),
-              Flexible(
-                child: buildOption("Team", Icons.group, () {
-                  _onTap();
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    backgroundColor: Colors.transparent,
-                    context: context,
-                    builder: (context) => _buildDraggableScrollableSheet(Team()),
-                  );
-                }),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: buildOption("Task", Icons.assignment, () {
-                  _onTap();
-                }),
-              ),
-              Flexible(
-                child: buildOption("Event", Icons.event, () {
-                  _onTap();
-                }),
-              ),
-            ],
-          ),
-        ],
-      ),
+                    builder: (context) => SweetTalkUser());
+              }),
+            ),
+            Flexible(
+              child: Optiongeneral("Word", Icons.text_fields, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => WordUser(),
+                );
+              }),
+            ),
+            Flexible(
+              child: Optiongeneral("Team", Icons.group, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) =>
+                      _buildDraggableScrollableSheet(const TeamUser()),
+                );
+              }),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Optiongeneral("Taskoo", Icons.assignment, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => Padding(
+                    padding: MediaQuery.of(context).viewInsets,
+                    child: Taskuser(),
+                  ),
+                );
+              }),
+            ),
+            Flexible(
+              child: Optiongeneral("Hi.Event", Icons.event, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => EventUser(),
+                );
+              }),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget buildOption(String optionName, IconData icon, VoidCallback onTap) {
+  Widget Optiongeneral(String optionName, IconData icon, VoidCallback onTap) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: InkWell(
         onTap: onTap,
         child: Container(
           margin: const EdgeInsets.all(10),
-          height: 85,
-          width: 85,
+          height: MediaQuery.of(context).size.width * 0.21,
+          width: MediaQuery.of(context).size.width * 0.21,
           decoration: BoxDecoration(
-            color: Color(0xfffcfcfc),
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -604,15 +685,162 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
             children: [
               Icon(
                 icon,
-                size: 40,
-                color: Colors.teal,
+                size: MediaQuery.of(context).size.width * 0.09,
+                color: AppColors.mainColor,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: MediaQuery.of(context).size.width * 0.007),
               Text(
                 optionName,
                 style: GoogleFonts.aclonica(
-                  fontSize: 18,
-                  color: Colors.black,
+                  fontSize: MediaQuery.of(context).size.width * 0.032,
+                  color: AppColors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget competition(String head) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          margin:
+          const EdgeInsets.only(left: 20, top: 10, right: 10, bottom: 0),
+          child: Text(
+            head,
+            style: GoogleFonts.aboreto(
+                color: AppColors.white,
+                fontSize: MediaQuery.sizeOf(context).width * 0.08),
+          ),
+        ),
+        Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child:
+              Optioncompetition('Prize', Icons.military_tech_outlined, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => IdeasUser(),
+                );
+              }),
+            ),
+            ScaleTransition(
+                scale: _scaleAnimation,
+                child: Score(
+                  numNatification: 5,
+                  appearNatification: true,
+                  colorNatification: Colors.grey,
+                  selectedMonth: '',
+                )),
+            Flexible(
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Optioncompetition('mission', Icons.minor_crash_sharp, () {
+                      _onTap();
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) => Padding(
+                          padding: MediaQuery.of(context).viewInsets,
+                          child: OpinionUser(),
+                        ),
+                      );
+                    }),
+                    Natification(
+                      color: Colors.red,
+                      num: 1,
+                      appear: true,
+                      appearIcon: true,
+                    )
+                  ],
+                )),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Optioncompetition("Rank", Icons.numbers_outlined, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => RankPage(),
+                );
+              }),
+            ),
+            Flexible(
+              child:
+              Optioncompetition("Attend", Icons.battery_charging_full, () {
+                _onTap();
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  isDismissible: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) =>
+                      _buildDraggableScrollableSheet(const TeamUser()),
+                );
+              }),
+            ),
+          ],
+        ),
+        Spacer(),
+      ],
+    );
+  }
+
+  Widget Optioncompetition(
+      String optionName, IconData icon, VoidCallback onTap) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(10),
+          height: MediaQuery.of(context).size.width * 0.25,
+          width: MediaQuery.of(context).size.width * 0.25,
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: MediaQuery.of(context).size.width * 0.11,
+                color: AppColors.mainColor,
+              ),
+              SizedBox(height: MediaQuery.of(context).size.width * 0.007),
+              Text(
+                optionName,
+                style: GoogleFonts.abyssinicaSil(
+                  fontSize: MediaQuery.of(context).size.width * 0.038,
+                  color: AppColors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -625,16 +853,16 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
 
   DraggableScrollableSheet _buildDraggableScrollableSheet(Widget nameWidget) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.4,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.9,
       snap: true,
       snapSizes: const [0.4, 0.6, 0.9],
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20),
             ),
           ),
@@ -647,14 +875,14 @@ class _HomeScreenUsersState extends State<HomeScreenUsers>
                   height: 5,
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: AppColors.lightgrey,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(50),
                       topRight: Radius.circular(50),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: AppColors.black.withOpacity(0.2),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),

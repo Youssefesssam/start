@@ -92,7 +92,6 @@ class StatisticsViewModel extends ChangeNotifier {
         .map((querySnapshot) {
       if (querySnapshot.docs.isNotEmpty) {
         final data = querySnapshot.docs.first.data();
-        print("#############$data");
         return data != null && data.containsKey(select)
             ? data[select] as int
             : 0; // Default to 0 if 'select' is not found

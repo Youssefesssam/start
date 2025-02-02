@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:star_t/ui/screens/homeScreen/homeScreenLeaders.dart';
+import 'package:star_t/ui/screens/homeScreen/homeScreenUsers.dart';
 
 import '../../../../../../model/modelData.dart';
 import '../../../../../../firebase/firebase.dart';
@@ -29,6 +31,7 @@ class _SettingState extends State<Setting> {
                 backgroundColor: MaterialStateColor.resolveWith((states) => Color(0xffefc900)),
               ),
               onPressed: () {
+                Navigator.pushNamed(context, HomeScreenUsers.routeName);
                 setState(() {
                   count++;
                 });

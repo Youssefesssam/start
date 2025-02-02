@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/designCard/natification/natification.dart';
+
+import '../../Contents/compettion/natification/natification.dart';
 
 class DesignCard extends StatelessWidget {
   final String titleCard;
@@ -70,7 +71,7 @@ class DesignCard extends StatelessWidget {
               child: Natification(
                 color: colorNatification,
                 appear: appearNatification,
-                num: numNatification,
+                num: numNatification, appearIcon: false,
               ),
             ),
         ],

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyUser {
   static const String collection = 'user';
@@ -11,6 +10,7 @@ class MyUser {
   late String university;
   late String gender;
 
+
   MyUser({
 
     required this.name,
@@ -21,6 +21,7 @@ class MyUser {
     required this.gender,
     required this.talent,
     required this.university,
+
   });
 
   MyUser.fromJson(Map<String, dynamic> json) {
@@ -33,6 +34,7 @@ class MyUser {
     gender =json["gender"];
     talent = json["talent"];
     university=json["university"];
+
   }
 
   Map<String, dynamic> toJson() {
@@ -44,7 +46,8 @@ class MyUser {
       'address':address,
       'gender':gender,
       'talent':talent,
-      'university':university
+      'university':university,
+
     };
   }
 }

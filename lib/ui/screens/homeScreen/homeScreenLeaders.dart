@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/appBarLeaders/appBar.dart';
+import '../features/featuresHomeScreenLeaders/bodyScreenLaders/attend/attend.dart';
 import '../features/featuresHomeScreenLeaders/home/home.dart';
-import '../features/featuresHomeScreenLeaders/listOfUsers/listOfUsers.dart';
 import '../features/featuresHomeScreenUsers/appBarUser/setting/setting.dart';
 
 class HomeScreenLeaders extends StatefulWidget {
@@ -22,8 +21,8 @@ class _HomeScreenLeaders extends State<HomeScreenLeaders> {
   void initState() {
     super.initState();
     screens = [
-      const Home(),
-      ListOfUsers(),
+       const Home(),
+        Attend(),
       const Setting(),
     ];
   }
@@ -68,9 +67,10 @@ class _HomeScreenLeaders extends State<HomeScreenLeaders> {
           label: "Home",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.list_alt, size: 30),
-          label: "List",
+          icon: Icon(Icons.account_circle_rounded, size: 30),
+          label: "Attend",
         ),
+
         BottomNavigationBarItem(
           icon: Icon(Icons.settings, size: 30),
           label: "Settings",

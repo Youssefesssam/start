@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/utilites/appColors.dart';
 import '../../../../../firebase/dataProvider.dart';
 import '../../../../../firebase/authProvider.dart';
 import '../../../../../model/modelUser.dart';
@@ -11,7 +12,7 @@ import 'menu.dart';
 
 class ListOfUsers extends StatefulWidget {
   static const String routeName = "listOfUsers";
-   ListOfUsers({super.key,});
+  ListOfUsers({super.key});
 
   @override
   State<ListOfUsers> createState() => _ListOfUsers();
@@ -19,33 +20,60 @@ class ListOfUsers extends StatefulWidget {
 
 class _ListOfUsers extends State<ListOfUsers> {
   int? selectedCardIndex;
-  int selectedIndex = 0; // القيمة الافتراضية
+  int? currentWeekNum;
+  late int weekToUse;
+  TextEditingController searchAllUser = TextEditingController();
+  String searchUser = '';
+
+  Future<void> fetchCurrentWeek() async {
+    int? week = await FirebaseUtils.getCurrentWeek();
+    setState(() {
+      currentWeekNum = week ?? 1; // في حالة عدم وجود قيمة، اجعل الأسبوع الأول الافتراضي
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AuthProviders>(context, listen: false).readUsersToLeaders();
+      fetchCurrentWeek();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    AuthProviders authProviders = Provider.of(context);
-    DataProvider dataProvider = Provider.of(context);
-    dataProvider.getDataFromFirebase(authProviders.currentUser?.id ?? "");
-    return Container(
-      decoration:  BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(0)),
-        gradient: LinearGradient(colors: [Colors.teal[800]!, Colors.grey[900]!],     begin: Alignment.bottomCenter,
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    bool isUpdate = args['update'] ?? false; // هل هي حالة تحديث؟
+    int? passedWeek = args['week'];
+    weekToUse = passedWeek ?? currentWeekNum ?? 1;
+    AuthProviders authProviders = Provider.of<AuthProviders>(context);
+    DataProvider dataProvider = Provider.of<DataProvider>(context);
+    dataProvider.getAllUserFromFirebase(authProviders.currentUser?.id ?? "");
 
-      ),),
+    // تصفية المستخدمين بناءً على الاسم المدخل
+    List<MyUser> filteredUsers = authProviders.users
+        .where((user) =>
+    searchUser.isEmpty || // عرض جميع المستخدمين إذا كان البحث فارغًا
+        (user.name.toLowerCase().startsWith(searchUser.toLowerCase())) // مقارنة الأحرف بنفس الترتيب
+    )
+        .toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(0)),
+        gradient: LinearGradient(
+          colors: AppColors.backGround,
+          begin: Alignment.bottomCenter,
+        ),
+      ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: authProviders.users.isEmpty
-            ? const Center(
+            ? Center(
           child: CircularProgressIndicator(
-            color: Colors.teal,
+            color: AppColors.mainColor,
           ),
         )
             : Stack(
@@ -57,31 +85,36 @@ class _ListOfUsers extends State<ListOfUsers> {
                   margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 0),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.grey[900],
+                    color: AppColors.darkgrey,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: Colors.teal.withOpacity(0.5),
+                      color: AppColors.mainColor.withOpacity(0.5),
                       width: 1.5,
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.search,
-                        color: Colors.teal,
+                        color: AppColors.mainColor,
                         size: 35,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
+                          controller: searchAllUser,
+                          decoration: InputDecoration(
                             hintText: "Search...",
-                            hintStyle: TextStyle(color: Colors.teal),
+                            hintStyle: TextStyle(color: AppColors.mainColor),
                             border: InputBorder.none,
                           ),
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.teal,
-                          onChanged: (value) {},
+                          style: TextStyle(color: AppColors.white),
+                          cursorColor: AppColors.mainColor,
+                          onChanged: (value) {
+                            setState(() {
+                              searchUser = value; // تحديث قيمة البحث عند الكتابة
+                            });
+                          },
                         ),
                       ),
                     ],
@@ -89,10 +122,10 @@ class _ListOfUsers extends State<ListOfUsers> {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: authProviders.users.length,
+                    itemCount: filteredUsers.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Dismissible(
-                        key: Key(authProviders.users[index].id),
+                        key: Key(filteredUsers[index].id),
                         direction: DismissDirection.endToStart,
                         onDismissed: (direction) {
                           setState(() {
@@ -117,20 +150,20 @@ class _ListOfUsers extends State<ListOfUsers> {
                           ),
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
                                 "Delete",
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 10),
-                              Icon(Icons.delete, color: Colors.white, size: 30),
+                              const SizedBox(width: 10),
+                              const Icon(Icons.delete, color: Colors.white, size: 30),
                             ],
                           ),
                         ),
@@ -146,7 +179,7 @@ class _ListOfUsers extends State<ListOfUsers> {
                           },
                           child: Container(
                             margin: const EdgeInsets.all(15),
-                            child: _buildCard(authProviders.users[index]),
+                            child: _buildCard(filteredUsers[index]),
                           ),
                         ),
                       );
@@ -179,10 +212,40 @@ class _ListOfUsers extends State<ListOfUsers> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildCard(authProviders.users[selectedCardIndex!]),
+                    _buildCard(filteredUsers[selectedCardIndex!]),
                     const SizedBox(height: 20),
-                    _buildMenu(authProviders.users[selectedCardIndex!]),
+                    _buildMenu(filteredUsers[selectedCardIndex!], isUpdate ? weekToUse : currentWeekNum!),
                   ],
+                ),
+              ),
+            if (isUpdate) // عرض زرار "Update" لو في حالة تحديث
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      print('Update week: $weekToUse');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      'Update',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -200,15 +263,16 @@ class _ListOfUsers extends State<ListOfUsers> {
     );
   }
 
-  Widget _buildMenu(MyUser user) {
+  Widget _buildMenu(MyUser user, int weekNum) {
     return Menu(
       onCloseMenu: () {
         setState(() {
           selectedCardIndex = null;
         });
       },
+      user: user,
       userId: user.id,
-      weekNum: selectedIndex + 1, // استخدام القيمة المستلمة هنا
+      weekNum: weekNum,
     );
   }
 }

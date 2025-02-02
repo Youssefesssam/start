@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
-class Opinion extends StatelessWidget {
-   Opinion({super.key});
+class OpinionUser extends StatelessWidget {
+  OpinionUser({super.key});
   final TextEditingController opinion = TextEditingController();
 
   @override
@@ -132,16 +132,20 @@ class Opinion extends StatelessWidget {
                       width: 180,
                       child: SlideAction(
                         innerColor: Colors.white,
-                        outerColor: Colors.red[600],
+                        outerColor: Color(0xffd32f2f), // تغيير اللون الأحمر إلى أحمر أغمق
                         elevation: 10,
                         textColor: Colors.white,
                         sliderButtonIconSize: 10,
                         sliderButtonIconPadding: 12,
-                        sliderButtonIcon: Icon(Icons.delete, size: 20, color: Colors.red),
+                        sliderButtonIcon: Icon(Icons.delete, size: 25, color: Color(0xffd32f2f)),
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
                         onSubmit: () {
-                          Future.delayed(const Duration(seconds: 1), () => print("Opinion Sent!"));
+                          Future.delayed(const Duration(seconds: 2), () {
+                             Navigator.pop(context);
+
+                          }
+                          );
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

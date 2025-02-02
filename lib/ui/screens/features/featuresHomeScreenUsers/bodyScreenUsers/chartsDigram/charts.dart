@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../bottomAppBarUsers/statistcsViewModel.dart';
 
+
 class Charts extends StatefulWidget {
   static const String routeName = "charts";
   var selectedmonth;
@@ -23,7 +24,7 @@ class _ChartsState extends State<Charts> {
 
     return Container(
       padding: const EdgeInsets.only(top: 25,right: 25,left: 25,bottom: 0),
-       margin: EdgeInsets.only(top: 10,bottom: 15,left: 10,right: 10),
+      margin: EdgeInsets.only(top: 10,bottom: 15,left: 10,right: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
             bottomRight: Radius.circular(0),

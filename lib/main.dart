@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:star_t/firebase/authProvider.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/bodyScreenLaders/attend/attend.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/answers.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/home.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/listOfUsers/listOfUsers.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/rank/rank.dart';
@@ -13,7 +15,6 @@ import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:star_t/ui/screens/auth/loginScreen/loginScreen.dart';
 import 'package:star_t/ui/screens/auth/registerScreen/regsterScreen.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/appBarLeaders/attendManual/attendManual.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/appBarUser/setting/setting.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/bodyScreenUsers/chartsDigram/charts.dart';
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
 
-      initialRoute: HomeScreenUsers.routeName,
+      initialRoute: HomeScreenLeaders.routeName,
       // This trailing comma makes auto-formatting nicer for build methods.
       debugShowCheckedModeBanner: false,
       routes: {
@@ -69,11 +70,12 @@ class MyApp extends StatelessWidget {
         TeemScreen.routeName: (_) => const TeemScreen(),
         TaskScreen.routeName: (_) => const TaskScreen(),
         ListOfUsers.routeName: (_) =>  ListOfUsers(),
-        AttendManual.routeName: (_) => const AttendManual(),
         Statistics.routeName: (_) =>  const Statistics(),
         Home.routeName: (_) => const Home(),
         RankPage.routeName: (_) =>  const RankPage(),
         AccountProfile.routeName: (_) =>  AccountProfile(),
+        Attend.routeName: (_) =>  Attend(),
+        Answers.routeName: (_) =>  Answers(),
       },
     );
   }

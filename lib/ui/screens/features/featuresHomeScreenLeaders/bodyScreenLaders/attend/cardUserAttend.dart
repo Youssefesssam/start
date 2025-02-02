@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:star_t/utilites/appColors.dart';
-import '../../../../../firebase/authProvider.dart';
-import '../../../../../firebase/dataProvider.dart';
-import '../../../../../model/modelUser.dart';
-import '../../../../../utilites/appAssets.dart';
+import '../../../../../../firebase/authProvider.dart';
+import '../../../../../../firebase/dataProvider.dart';
+import '../../../../../../model/modelUserAttend.dart';
+import '../../../../../../utilites/appAssets.dart';
 
-class CardUser extends StatefulWidget {
-  final MyUser users;
+
+class CardUserAttend extends StatefulWidget {
+  final User users;
    int score;
    int rank ;
-  final String userId; // إضافة الـ userId هنا
 
-  CardUser({super.key, required this.users, required this.userId,required this.score,required this.rank});
+  CardUserAttend({super.key, required this.users,required this.score,required this.rank});
 
   @override
-  _CardUserState createState() => _CardUserState();
+  _CardUserAttend createState() => _CardUserAttend();
 }
 
-class _CardUserState extends State<CardUser> {
-  @override
-  void initState() {
-    super.initState();
-    // استدعاء دالة جلب البيانات عند بداية التحميل
-    if (widget.userId.isNotEmpty) {
-      Provider.of<DataProvider>(context, listen: false).getAllUserFromFirebase(widget.userId);
-    }
-  }
+class _CardUserAttend extends State<CardUserAttend> {
+
 
   @override
   Widget build(BuildContext context) {
@@ -103,11 +96,7 @@ class _CardUserState extends State<CardUser> {
                   ),
                   Row(
                     children: [
-                      Text("${widget.users.gender}",
-                          style: TextStyle(fontSize: 14, color: Colors.white)),
-                      SizedBox(
-                        width: 4,
-                      ),
+
                       Icon(
                         Icons.transgender,
                         size: 16,

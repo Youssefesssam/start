@@ -1,18 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:star_t/firebase/authProvider.dart';
-import 'package:star_t/firebase/dataProvider.dart';
+import 'package:star_t/model/modelUser.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/bodyScreenLaders/attend/attend.dart';
 import '../../../../../model/modelData.dart';
 import '../../../../../firebase/firebase.dart';
-import '../../featuresHomeScreenUsers/bodyScreenUsers/bottomAppBarUsers/statistics.dart';
 
 class Menu extends StatefulWidget {
   String userId;
   int weekNum;
+  MyUser user;
   final VoidCallback onCloseMenu; // Callback لإغلاق المنيو
 
-   Menu({super.key, required this.onCloseMenu,required this.userId,required this.weekNum,});
+  Menu(
+      {super.key, required this.onCloseMenu, required this.userId, required this.weekNum,required this.user});
 
   @override
   State<Menu> createState() => _MenuState();
@@ -37,11 +36,9 @@ class _MenuState extends State<Menu> {
   // حالة العملية (في انتظار أو مكتملة)
   bool isWaiting = false;
   bool isDone = false;
-
+  bool dataAdded=false;
   @override
   Widget build(BuildContext context) {
-    AuthProviders authProviders = Provider.of(context);
-    DataProvider dataProvider = Provider.of(context);
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -58,17 +55,18 @@ class _MenuState extends State<Menu> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          Text("week number ==${widget.weekNum}"),
           buildRow(
               "القداس", isMassActive, massScore, () => toggleState("mass")),
           const Divider(thickness: 1, color: Colors.white),
           buildRow("التناول", isCommunionActive, communionScore,
-              () => toggleState("communion")),
+                  () => toggleState("communion")),
           const Divider(thickness: 1, color: Colors.white),
           buildRow("الاعتراف", isConfessionActive, confessionScore,
-              () => toggleState("confession")),
+                  () => toggleState("confession")),
           const Divider(thickness: 1, color: Colors.white),
           buildRow("الاجتماع", isMeetingActive, meetingScore,
-              () => toggleState("meeting")),
+                  () => toggleState("meeting")),
           const Divider(thickness: 1, color: Colors.white),
           Column(
             children: [
@@ -84,58 +82,75 @@ class _MenuState extends State<Menu> {
                           color: Colors.blueAccent,
                         ),
                       )
-                    else if (isDone)
-                      const Icon(Icons.done, color: Colors.green, size: 30)
                     else
-                      Column(
-                        children: [
-                          const SizedBox(height: 20), // مسافة بين الزرين
+                      if (isDone)
+                        const Icon(Icons.done, color: Colors.green, size: 30)
+                      else
+                        Column(
+                          children: [
+                            const SizedBox(height: 20), // مسافة بين الزرين
 
-                          InkWell(
-                            onTap: resetScores,
-                            child: Container(
-                              padding: EdgeInsets.only(left: 20,right: 20,top: 10,bottom: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 1.5,
+                            InkWell(
+                              onTap: resetScores,
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 20, right: 20, top: 10, bottom: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Text(
+                                  "RESET",
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white),
                                 ),
                               ),
-                              child: const Text(
-                                "RESET",
-                                style: TextStyle(fontSize: 18, color: Colors.white),
+                            ),
+                            const SizedBox(height: 20), // مسافة بين الزرين
+
+                            InkWell(
+                              onTap: () {
+                                dataAdded=true;
+                                addScoreUser(
+                                  score: totalScore,
+                                  meetingScoreDB: meetingScore,
+                                  communionScoreDB: communionScore,
+                                  confessionScoreDB: confessionScore,
+                                  massScoreDB: massScore,
+                                  weekNumber: widget.weekNum,
+                                );
+                                if(isMeetingActive){
+                                  FirebaseUtils.attendUsers(
+                                      widget.weekNum,
+                                      widget.user,
+                                      totalScore,
+                                      massScore,
+                                      communionScore,
+                                      confessionScore,
+                                      meetingScore,
+
+                                  );}
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 50, right: 50, top: 10, bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.teal,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  "CONFIRM",
+                                  style: TextStyle(
+                                      fontSize: 20, color: Colors.white),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20), // مسافة بين الزرين
 
-                          InkWell(
-                            onTap: () {
-                              addScoreUser(
-                                score: totalScore,
-                                meetingScoreDB: meetingScore,
-                                communionScoreDB: communionScore,
-                                confessionScoreDB: confessionScore,
-                                massScoreDB: massScore,
-                                weekNumber: widget.weekNum,
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.only(left: 50,right: 50,top: 10,bottom: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.teal,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Text(
-                                "CONFIRM",
-                                style: TextStyle(fontSize: 20, color: Colors.white),
-                              ),
-                            ),
-                          ),
-
-                        ],
-                      ),
+                          ],
+                        ),
                   ],
                 ),
               ),
@@ -161,10 +176,10 @@ class _MenuState extends State<Menu> {
           duration: const Duration(milliseconds: 300),
           child: isActive
               ? Text(
-                  "+$score",
-                  key: ValueKey(label),
-                  style: const TextStyle(color: Colors.green, fontSize: 20),
-                )
+            "+$score",
+            key: ValueKey(label),
+            style: const TextStyle(color: Colors.green, fontSize: 20),
+          )
               : const SizedBox(key: ValueKey("hidden")),
         ),
         const SizedBox(width: 10),
@@ -219,6 +234,7 @@ class _MenuState extends State<Menu> {
       isDone = false;
     });
   }
+
   void addScoreUser({
     required int score,
     required int meetingScoreDB,
@@ -285,9 +301,4 @@ class _MenuState extends State<Menu> {
       );
     }
   }
-  }
-
-
-
-
-
+}

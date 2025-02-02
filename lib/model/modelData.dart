@@ -11,7 +11,8 @@ class ModelData {
     required this.massScore,
     required this.communionScore,
     required this.confessionScore,
-    required this.meetingScore
+    required this.meetingScore,
+
   });
 
   factory ModelData.fromJson(Map<String, dynamic> data) {
@@ -21,6 +22,7 @@ class ModelData {
       confessionScore: data['confessionScore'] ?? 0,
       massScore: data['massScore'] ?? 0,
       meetingScore: data['meetingScore'] ?? 0,
+
     );
   }
 
@@ -31,6 +33,7 @@ class ModelData {
       'communionScore': communionScore,
       'confessionScore': confessionScore,
       'meetingScore': meetingScore,
+
     };
   }
 }

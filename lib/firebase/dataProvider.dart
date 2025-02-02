@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:star_t/model/modelData.dart';
 import 'package:star_t/model/modelYear.dart';
-import 'package:star_t/model/modelweek.dart';
 
 import '../model/modelUser.dart';
 
@@ -10,11 +9,11 @@ class DataProvider extends ChangeNotifier {
 
   ModelData? infoUser;
   late String uid;
-
+  late int currentWeekNum = 0;
 
 
   // دالة جلب البيانات من Firebase
-  Future<void> getDataFromFirebase(String userId) async {
+  Future<void> getAllUserFromFirebase(String userId) async {
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection(MyUser.collection) // اسم المجموعة الرئيسية
@@ -34,6 +33,34 @@ class DataProvider extends ChangeNotifier {
       print("Error fetching user data: $e");
     }
   }
+
+  Future<void> getAttendUserFromFirebase({required int numWeek}) async {
+    try {
+      if (numWeek == null ) {
+        print("Error: Invalid parameters for fetching user data.");
+        return;
+      }
+
+      DocumentSnapshot userAttend = await FirebaseFirestore.instance
+          .collection('numWeek')
+          .doc(numWeek.toString())
+          .collection('attend')
+          .doc()
+          .get();
+
+      if (userAttend.exists) {
+        var userData = userAttend.data() as Map<String, dynamic>;
+        infoUser = ModelData.fromJson(userData);
+        notifyListeners();
+      } else {
+        print("Fetching data for week: $currentWeekNum");
+
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+    }
+  }
+
 
   List<Map<String, dynamic>> dataList = []; // لتخزين البيانات المسترجعة
 
@@ -82,6 +109,7 @@ class DataProvider extends ChangeNotifier {
 
 
   List<int> scoresList = [];
+
   void retrieveScoresById(String uid) async {
     try {
       // استرجاع الوثائق من المجموعة الفرعية بناءً على UID
@@ -94,8 +122,10 @@ class DataProvider extends ChangeNotifier {
 
       snapshot.docs.forEach((element) {
         Map<String, dynamic> data = element.data() as Map<String, dynamic>;
-        if (data.containsKey('TotalScoreOfYear')) { // التأكد من وجود الحقل score
-          scoresList.add(data['TotalScoreOfYear']); // إضافة قيمة score إلى المصفوفة
+        if (data.containsKey(
+            'TotalScoreOfYear')) { // التأكد من وجود الحقل score
+          scoresList.add(
+              data['TotalScoreOfYear']); // إضافة قيمة score إلى المصفوفة
         }
       });
 
@@ -104,7 +134,6 @@ class DataProvider extends ChangeNotifier {
       print("Error fetching scores for UID $uid: $e");
     }
   }
-
 
 
   int massScore = 0;
@@ -119,18 +148,15 @@ class DataProvider extends ChangeNotifier {
       // استخدام userId لاسترجاع بيانات المستخدم المحدد
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection(MyUser.collection)
-          .doc(userId) // استرجاع البيانات الخاصة بالـ userId
+          .doc(userId)
           .get();
-
       if (snapshot.exists) {
         // إذا كان المستند موجودًا، استرجاع البيانات
         CollectionReference subCollectionRef = FirebaseFirestore.instance
             .collection(MyUser.collection)
             .doc(userId) // استخدام userId
             .collection(ModelYear.collection);
-
         QuerySnapshot subSnapshot = await subCollectionRef.get();
-
         if (subSnapshot.docs.isNotEmpty) {
           var subData = subSnapshot.docs.first.data() as Map<String, dynamic>;
 
@@ -161,31 +187,6 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void tina(String userId) async {
-    try {
-      QuerySnapshot snapshot =
-      await FirebaseFirestore.instance.collection(MyUser.collection).get();
-
-      dataList.clear(); // مسح البيانات القديمة
-      for (var element in snapshot.docs) {
-        // استخراج البيانات من المجموعات الفرعية
-        QuerySnapshot subCollectionSnapshot = await FirebaseFirestore.instance
-            .collection(MyUser.collection)
-            .doc(userId)
-            .collection(ModelYear.collection).orderBy('TotalScoreOfYear',descending: true)
-            .get();
-
-        for (var subElement in subCollectionSnapshot.docs) {
-          var subData = subElement.data() as Map<String, dynamic>;
-          dataList.add(subData);
-        }
-      }
-
-      print("Sub-collection data retrieved: $dataList");
-    } catch (e) {
-      print("Error fetching sub-collection data: $e");
-    }
-  }
 
   List<String> idList = []; // لتخزين البيانات المسترجعة
   void retrieveid() async {
@@ -209,12 +210,12 @@ class DataProvider extends ChangeNotifier {
   }
 
 
-
   void retrieveIdByScore() async {
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection(MyUser.collection)
-          .orderBy('TotalScoreOfYear', descending: true) // الترتيب حسب الـ score تنازليًا
+          .orderBy('TotalScoreOfYear',
+          descending: true) // الترتيب حسب الـ score تنازليًا
           .get();
 
       dataList.clear(); // مسح البيانات القديمة
@@ -237,10 +238,7 @@ class DataProvider extends ChangeNotifier {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection(MyUser.collection)
           .get();
-
       List<Map<String, dynamic>> usersData = [];
-
-      // اجلب بيانات المستخدمين ومجموعاتهم الفرعية
       for (var userDoc in snapshot.docs) {
         String uid = userDoc.id;
         var userData = userDoc.data() as Map<String, dynamic>;
@@ -255,7 +253,8 @@ class DataProvider extends ChangeNotifier {
         int totalScore = subCollectionSnapshot.docs.fold(0, (sum, doc) {
           final data = doc.data() as Map<String, dynamic>;
           final score = (data['TotalScoreOfYear'] ?? 0) as int;
-          return sum + score;      });
+          return sum + score;
+        });
 
         // إضافة بيانات المستخدم والمجموع الإجمالي
         userData['TotalScoreOfYear'] = totalScore;
@@ -263,7 +262,8 @@ class DataProvider extends ChangeNotifier {
       }
 
       // ترتيب البيانات
-      usersData.sort((a, b) => b['TotalScoreOfYear'].compareTo(a['TotalScoreOfYear']));
+      usersData.sort((a, b) =>
+          b['TotalScoreOfYear'].compareTo(a['TotalScoreOfYear']));
 
       // تحديث القائمة
       dataList = usersData;
@@ -318,7 +318,7 @@ class DataProvider extends ChangeNotifier {
         // حساب مجموع السكور لكل يوزر
         int totalScore = yearSnapshot.docs.fold(0, (sum, doc) {
           final data = doc.data() as Map<String, dynamic>;
-          return sum + (data['TotalScoreOfYear'] ?? 0)as int;
+          return sum + (data['TotalScoreOfYear'] ?? 0) as int;
         });
 
         // إضافة بيانات المستخدم مع مجموع السكور
@@ -338,6 +338,9 @@ class DataProvider extends ChangeNotifier {
       print('Error fetching user ranks: $e');
     }
   }
+//******************************/**
 
+
+//*****************************/****
 
 }

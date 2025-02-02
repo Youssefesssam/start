@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:slide_to_act/slide_to_act.dart';
 import 'package:star_t/utilites/appAssets.dart';
 
 class SettingUser extends StatelessWidget {
@@ -12,7 +14,7 @@ class SettingUser extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor:Colors.teal[800],
+        backgroundColor: Colors.teal[800],
         title: const Text(
           "Account",
           style: TextStyle(color: Colors.white),
@@ -30,8 +32,7 @@ class SettingUser extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
-                  colors: [Colors.teal[800]!,
-                    Colors.teal[800]! ],
+                  colors: [Colors.teal[800]!, Colors.teal[800]!],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 )),
@@ -140,6 +141,7 @@ class SettingUser extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+
             ],
           ),
         ),
@@ -181,6 +183,7 @@ class SettingUser extends StatelessWidget {
                 color: Colors.grey,
                 size: 16,
               ),
+
           ],
         ),
       ),

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/compettion/natification/natification.dart';
 import 'package:status_alert/status_alert.dart';
-import '../bodyScreenUsers/bottomAppBarUsers/statistcsViewModel.dart';
-import '../bodyScreenUsers/designCard/designCard.dart';
+import '../../../../../../utilites/appColors.dart';
+import '../../bodyScreenUsers/bottomAppBarUsers/statistcsViewModel.dart';
+
 
 class Score extends StatefulWidget {
-  final Color color;
-  final String path;
-  final String titleCard;
   final Color colorNatification;
   final bool appearNatification;
   final int numNatification;
@@ -16,9 +15,6 @@ class Score extends StatefulWidget {
 
   Score({
     super.key,
-    required this.titleCard,
-    required this.color,
-    required this.path,
     required this.numNatification,
     required this.colorNatification,
     required this.appearNatification,
@@ -35,45 +31,38 @@ class _ContentsState extends State<Score> {
   Widget build(BuildContext context) {
     StatisticsViewModel statisticsViewModel = Provider.of<StatisticsViewModel>(context);
     bool isLoading = true;
-    // استخدم FutureBuilder لانتظار قيمة السكور الكلي
     return FutureBuilder<int>(
       future: statisticsViewModel.getTotalScoreForYear("5u0qEXBm0eaW7J0n5Y8VhF5WdBD2", "1"),
       builder: (context, snapshot) {
-        // عند التحميل
         if (snapshot.connectionState == ConnectionState.waiting) {
           return  InkWell(
             onTap: () async {
-              // Fetch the total score for the user and year
               int score = await statisticsViewModel.getTotalScoreForYear("5u0qEXBm0eaW7J0n5Y8VhF5WdBD2", "1");
-
-              // Update the score state and UI
               scoreState(score);
-
-              // Show the StatusAlert with the score
               StatusAlert.show(
-                backgroundColor: Color(0xBA565353),
+                backgroundColor: Color(0xc70d5e54),
                 borderRadius: BorderRadius.circular(40),
                 context,
-                duration: Duration(seconds: 3),
+                duration: Duration(seconds: 30),
                 configuration: WidgetConfiguration(
                   widget: Column(
                     children: [
                       Center(
                         child: Text(
                           "$score",
-                          style: const TextStyle(
+                          style:  TextStyle(
                             fontSize: 80,
-                            color: Color(0xfffbb800),
+                            color:Color(0xffffffff),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
+                       Text(
                         "Score",
                         style: TextStyle(
                           fontSize: 30,
-                          color: Color(0xfffbb800),
+                          color: Color(0xffffffff),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -82,9 +71,9 @@ class _ContentsState extends State<Score> {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style:  TextStyle(
                               fontSize: 20,
-                              color: Color(0xfffbb800),
+                              color:Color(0xffffffff),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -96,12 +85,48 @@ class _ContentsState extends State<Score> {
                 maxWidth: 260,
               );
             },
-            child: DesignCard(
-              path: widget.path,
-              titleCard: widget.titleCard,
-              appearNatification: widget.appearNatification,
-              colorNatification: widget.colorNatification,
-              numNatification: widget.numNatification,
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Container(
+                  margin:  const EdgeInsets.all(10),
+                  height: MediaQuery.of(context).size.width * 0.32,
+                  width: MediaQuery.of(context).size.width * 0.32,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: AppColors.smoothColorTeal,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.sports_score,
+                        size: MediaQuery.of(context).size.width * 0.13,
+                        color:AppColors.white,),
+                      SizedBox(height: MediaQuery.of(context).size.width * 0.005),
+                      Text(
+                        "Score",
+                        style: GoogleFonts.aclonica(
+                          fontSize: MediaQuery.of(context).size.width * 0.04,
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Natification(color: Colors.red, num: 5, appear: true, appearIcon: true,)
+              ],
             ),
           );
 
@@ -115,7 +140,7 @@ class _ContentsState extends State<Score> {
               int? score = snapshot.data;
               scoreState(score!);
               StatusAlert.show(
-                backgroundColor: Color(0xBA565353),
+                backgroundColor: Color(0x9101655A),
                 borderRadius: BorderRadius.circular(40),
                 context,
                 duration: Duration(seconds: 3),
@@ -160,31 +185,55 @@ class _ContentsState extends State<Score> {
                 maxWidth: 260,
               );
             },
-            child: DesignCard(
-              path: widget.path,
-              titleCard: widget.titleCard,
-              appearNatification: widget.appearNatification,
-              colorNatification: widget.colorNatification,
-              numNatification: widget.numNatification,
+            child:Container(
+              margin:  const EdgeInsets.all(10),
+              height: MediaQuery.of(context).size.width * 0.32,
+              width: MediaQuery.of(context).size.width * 0.32,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: AppColors.smoothColorTeal,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.sports_score,
+                    size: MediaQuery.of(context).size.width * 0.13,
+                    color:AppColors.white,),
+                  SizedBox(height: MediaQuery.of(context).size.width * 0.005),
+                  Text(
+                    "Score",
+                    style: GoogleFonts.aclonica(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
-
-        // دالة لتحديث العنوان بناءً على النقاط
-
-        // في حالة حدوث خطأ
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-
         // في حالة عدم وجود بيانات
         return Center(child: Text('No data available.'));
       },
     );
   }
   void scoreState(int score) {
-    print("Score in scoreState: $score");  // طباعة النقاط للتأكد
-
+    print("Score in scoreState: $score");
     if (score <= 800 && score > 700) {
       title = "Excellent! Keep it up";
     } else if (score <= 700 && score > 600) {
@@ -200,7 +249,6 @@ class _ContentsState extends State<Score> {
     } else {
       title = "You're the best!";
     }
-
     print("Updated Title: $title");  // طباعة العنوان بعد التحديث
 
     // تأكد من تحديث واجهة المستخدم بعد تغيير العنوان

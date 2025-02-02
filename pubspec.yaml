@@ -42,7 +42,7 @@ dependencies:
   firebase_auth: ^4.16.0
   tiktoklikescroller: ^0.2.8
   google_fonts: ^5.0.0
-
+  slide_to_act: ^2.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+import 'package:star_t/firebase/firebase.dart';
 
-class Opinion extends StatelessWidget {
-   Opinion({super.key});
-  final TextEditingController opinion = TextEditingController();
+class SweetTalk extends StatelessWidget {
+  SweetTalk({super.key});
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController sweetTalk = TextEditingController();
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -54,7 +55,7 @@ class Opinion extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Write Your Opinion",
+                      "Sweet Talk",
                       style: GoogleFonts.poppins(
                         fontSize: 25,
                         fontWeight: FontWeight.w600,
@@ -86,22 +87,22 @@ class Opinion extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.teal.withOpacity(0.2),
-                          blurRadius: 20,
+                          blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
                     child: const Icon(
-                      Icons.event,
-                      size: 80,
+                      Icons.favorite,
+                      size: 70,
                       color: Colors.white,
                     ),
                   ),
                 ),
                 const SizedBox(height: 30),
 
-                // حقل إدخال النص
                 TextField(
+                  controller: sweetTalk,
                   maxLines: 4,
                   decoration: InputDecoration(
                     filled: true,
@@ -110,7 +111,7 @@ class Opinion extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: 'Type your opinion here...',
+                    hintText: 'Type a message...',
                     hintStyle: GoogleFonts.poppins(
                       fontSize: 16,
                       color: Colors.grey[500],
@@ -121,7 +122,36 @@ class Opinion extends StatelessWidget {
                     color: Colors.grey[800],
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // أضف خاصية تحميل الصورة
+                      },
+                      icon: const Icon(Icons.image, size: 20),
+                      label: Text(
+                        "Add Image",
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 20),
+                        backgroundColor: Colors.teal[400],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
 
                 // أزرار المشاركة والخروج
                 Row(
@@ -141,12 +171,14 @@ class Opinion extends StatelessWidget {
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
                         onSubmit: () {
-                          Future.delayed(const Duration(seconds: 1), () => print("Opinion Sent!"));
+                          Future.delayed(const Duration(seconds: 3), () {
+                            Navigator.pop(context);
+                          });
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            SizedBox(width: 10,),
+                            SizedBox(width: 10),
                             Text(
                               "Exit",  // تصحيح التسمية إلى Exit
                               style: GoogleFonts.poppins(
@@ -159,7 +191,7 @@ class Opinion extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(width: 10,),
+                    SizedBox(width: 10),
                     SizedBox(
                       height: 60,
                       width: 180,
@@ -174,12 +206,12 @@ class Opinion extends StatelessWidget {
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
                         onSubmit: () {
-                          Future.delayed(const Duration(seconds: 1), () => print("Opinion Sent!"));
+                          FirebaseUtils.sweetTalkSet(sweetTalk: sweetTalk.text);
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            SizedBox(width: 10,),
+                            SizedBox(width: 10),
                             Text(
                               "Share",
                               style: GoogleFonts.poppins(
@@ -191,7 +223,7 @@ class Opinion extends StatelessWidget {
                           ],
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),

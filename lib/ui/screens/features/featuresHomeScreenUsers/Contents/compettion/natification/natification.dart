@@ -3,22 +3,25 @@ import 'package:flutter/material.dart';
 class Natification extends StatelessWidget {
   Color color =Colors.green;
   bool appear =false;
+  bool appearIcon =true;
+
   int num ;
    Natification({
   super.key,
   required this.color,
   required this.num,
-  required this.appear});
+  required this.appear,
+    required appearIcon });
   @override
   Widget build(BuildContext context) {
     return  appear == true ? Container (
-      width: 22,
-      height: 22,
+      width: 25,
+      height: 25,
       decoration: BoxDecoration(
           color:color,
           borderRadius: BorderRadius.circular(50)),
       child:  Center(
-          child: Text(
+          child: appearIcon ? Icon(Icons.lock_clock,color: Colors.white,size: 15,):Text(
             "${num}",
             style: TextStyle(
                 color: Colors.white,
