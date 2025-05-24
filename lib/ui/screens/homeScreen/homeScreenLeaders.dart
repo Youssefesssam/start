@@ -6,7 +6,7 @@ import '../features/featuresHomeScreenUsers/appBarUser/setting/setting.dart';
 class HomeScreenLeaders extends StatefulWidget {
   static const String routeName = "HomeScreenLeaders";
 
-  HomeScreenLeaders({super.key});
+  const HomeScreenLeaders({super.key});
 
   @override
   _HomeScreenLeaders createState() => _HomeScreenLeaders();
@@ -15,67 +15,98 @@ class HomeScreenLeaders extends StatefulWidget {
 class _HomeScreenLeaders extends State<HomeScreenLeaders> {
   int currentTapIndex = 0;
 
-  late List<Widget> screens;
+  final List<Widget> screens = [
+    Home(),
+    Attend(),
+    Setting(),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    screens = [
-       const Home(),
-        Attend(),
-      const Setting(),
-    ];
-  }
+  final List<String> titles = [
+    "الرئيسية",
+    "الحضور",
+    "الإعدادات",
+  ];
+
+  final List<IconData> icons = [
+    Icons.home_filled,
+    Icons.account_circle_rounded,
+    Icons.settings,
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black54,
-      bottomNavigationBar: buildBottomNavigation(),
-      body: screens[currentTapIndex],
+      backgroundColor: Colors.black87,
+
+      body: Stack(
+        children: [
+          // عرض الصفحة الحالية
+          screens[currentTapIndex],
+
+          // شريط التنقل السفلي المخصص
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 70,
+              decoration: BoxDecoration(
+                color:  Colors.black.withOpacity(.8), // 🔵 لون خلفية الشريط
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.4),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(screens.length, (index) {
+                  final isActive = currentTapIndex == index;
+                  final color = isActive ? Colors.blue[800]! : Colors.white60;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        currentTapIndex = index;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isActive ? Colors.blue[800]!.withOpacity(0.2) : Colors.transparent,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            icons[index],
+                            color: color,
+                            size: 30,
+                          ),
+                          if (isActive)
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.blue[800]!, // ● المؤشر الصغير
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
-
-  Widget buildBottomNavigation() => Container(
-    decoration: BoxDecoration(
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          spreadRadius: 2,
-        ),
-      ],
-    ),
-    child: BottomNavigationBar(
-      elevation: 10,
-      backgroundColor: Colors.grey[900],
-      selectedItemColor: Colors.teal,
-      unselectedItemColor: Colors.grey[500],
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-      type: BottomNavigationBarType.fixed,
-      currentIndex: currentTapIndex,
-      selectedIconTheme: IconThemeData(color: Colors.teal),
-      onTap: (index) {
-        setState(() {
-          currentTapIndex = index;
-        });
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_filled, size: 30),
-          label: "Home",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle_rounded, size: 30),
-          label: "Attend",
-        ),
-
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings, size: 30),
-          label: "Settings",
-        ),
-      ],
-    ),
-  );
 }

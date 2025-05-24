@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:slide_to_act/slide_to_act.dart';
-import 'package:star_t/firebase/firebase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:star_t/utilites/appColors.dart';
+import '../../../../../firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
+import '../../../../../firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
 import 'answers.dart';
 
 class Task extends StatefulWidget {
@@ -14,37 +15,21 @@ class Task extends StatefulWidget {
 }
 
 class _TaskState extends State<Task> {
-  late Future<QueryDocumentSnapshot?> _taskFuture;
   final TextEditingController _taskController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize the future once when the widget is created
-    _taskFuture =
-        FirebaseFirestore.instance.collection('task').limit(1).get().then((
-            snapshot) {
-          if (snapshot.docs.isNotEmpty) {
-            return snapshot.docs.first; // Return the first task if it exists
-          } else {
-            return null; // Return null if no task exists
-          }
-        });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<QueryDocumentSnapshot?>(
-      future: _taskFuture, // Use the pre-initialized future
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('task').snapshots(),
       builder: (context, snapshot) {
-        // If a task exists, load it into the controller
-        if (snapshot.hasData && snapshot.data != null) {
-          _taskController.text = snapshot.data!['task'];
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          _taskController.text = ''; // إذا لم تكن هناك بيانات
         } else {
-          _taskController.text = ''; // Empty field if no task exists
+          _taskController.text = snapshot.data!.docs.first['task']; // تحميل أول مهمة
         }
 
-        return  Container(
+        return Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: const BorderRadius.only(
@@ -62,10 +47,7 @@ class _TaskState extends State<Task> {
           padding: const EdgeInsets.all(20),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery
-                  .of(context)
-                  .size
-                  .height * 0.9,
+              maxHeight: MediaQuery.of(context).size.height * 0.9,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -73,7 +55,7 @@ class _TaskState extends State<Task> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    margin: EdgeInsets.only(left: 160,right: 160),
+                    margin: const EdgeInsets.symmetric(horizontal: 160),
                     height: 4,
                     width: 50,
                     decoration: BoxDecoration(
@@ -86,28 +68,29 @@ class _TaskState extends State<Task> {
                   Row(
                     children: [
                       Text(
-                        "Write the taskoo",
+                        "Write the task",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[800],
+                          color: Colors.blue[800],
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      Spacer(),
+                      const Spacer(),
                       GestureDetector(
-                          onTap: (){
-                            Navigator.pushNamed(context, Answers.routeName);
-                          },
-                          child: Icon(Icons.question_answer,size:35,color: AppColors.secColor,)),
+                        onTap: () {
+                          Navigator.pushNamed(context, Answers.routeName);
+                        },
+                        child: Icon(Icons.question_answer_outlined, size: 35, color: Colors.blue[800]),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Container(
 
-                    padding: EdgeInsets.all(20),
+                  Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color:Colors.white,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -117,18 +100,22 @@ class _TaskState extends State<Task> {
                         ),
                       ],
                     ),
-
                     child: Row(
                       children: [
-                        Text(_taskController.text.isEmpty?'No Task yet':_taskController.text,style: TextStyle(fontSize: 25,color: Colors.teal,fontWeight: FontWeight.bold), ),
-                        Spacer(),
+                        Expanded(
+                          child: Text(
+                            _taskController.text.isEmpty ? '' : _taskController.text,
+                            style: const TextStyle(fontSize: 20, color: Colors.teal, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                         InkWell(
-                            onTap: (){
-                              FirebaseUtils.deleteAnswers();
-
-                              _taskController.clear();
-                            },
-                            child: Icon(Icons.delete_sweep_rounded,size: 30,color: Colors.red[400],))
+                          onTap: () {
+                            FireBaseGetDataForLeader.deleteAnswers();
+                            FirebaseFirestore.instance.collection('task').doc(snapshot.data!.docs.first.id).delete();
+                            _taskController.clear();
+                          },
+                          child: Icon(Icons.delete, size: 30, color: Colors.red[400]),
+                        ),
                       ],
                     ),
                   ),
@@ -150,8 +137,6 @@ class _TaskState extends State<Task> {
                       contentPadding: const EdgeInsets.all(16),
                     ),
                     style: const TextStyle(color: Colors.black87),
-                    readOnly: false,
-                    enabled: true,
                   ),
                   const SizedBox(height: 30),
 
@@ -160,8 +145,8 @@ class _TaskState extends State<Task> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       SizedBox(
-                        height: 60,
-                        width: 180,
+                        height: 50,
+                        width: MediaQuery.of(context).size.width * 0.4,
                         child: SlideAction(
                           innerColor: Colors.white,
                           outerColor: Colors.red[600],
@@ -169,63 +154,62 @@ class _TaskState extends State<Task> {
                           textColor: Colors.white,
                           sliderButtonIconSize: 10,
                           sliderButtonIconPadding: 12,
-                          sliderButtonIcon: Icon(Icons.delete, size: 20, color: Colors.red),
-                          submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
+                          animationDuration: const Duration(milliseconds: 200),
+                          sliderButtonIcon: const Icon(Icons.exit_to_app, size: 20, color: Colors.red),
+                          submittedIcon: const Icon(Icons.check, size: 30, color: Colors.white),
                           key: GlobalKey<SlideActionState>(),
                           onSubmit: () {
-                            Future.delayed(const Duration(seconds: 3), () {
+                            Future.delayed(const Duration(seconds: 1), () {
                               Navigator.pop(context);
                             });
                           },
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(width: 10,),
                               Text(
-                                "Exit",  // تصحيح التسمية إلى Exit
+                                "Exit",
                                 style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      SizedBox(width: 10,),
+                      const Spacer(),
                       SizedBox(
-                        height: 60,
-                        width: 180,
+                        height: 50,
+                        width: MediaQuery.of(context).size.width * 0.4,
                         child: SlideAction(
                           innerColor: Colors.white,
-                          outerColor: Colors.teal,
+                          outerColor: Colors.blue[800],
                           elevation: 10,
                           textColor: Colors.white,
                           sliderButtonIconSize: 10,
                           sliderButtonIconPadding: 12,
-                          sliderButtonIcon: Icon(Icons.send, size: 20, color: Colors.teal),
-                          submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
+                          animationDuration: const Duration(milliseconds: 500),
+                          sliderButtonIcon:  Icon(Icons.send, size: 20, color: Colors.blue[800]),
+                          submittedIcon: const Icon(Icons.check, size: 30, color: Colors.white),
                           key: GlobalKey<SlideActionState>(),
                           onSubmit: () {
-                            Future.delayed(const Duration(seconds: 1), () {
-                              FirebaseUtils.sendTask(
+
+                            FireBaseSetDataForLeader.sendTask(
                                 task: _taskController.text,
                                 leader: 'tina',
                               );
-                              Navigator.pop(context);
-                            },);
+
                           },
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(width: 10,),
                               Text(
                                 "Share",
                                 style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],

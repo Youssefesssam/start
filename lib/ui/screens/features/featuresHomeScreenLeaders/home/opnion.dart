@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
+import '../../../../../firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+
 class Opinion extends StatelessWidget {
    Opinion({super.key});
   final TextEditingController opinion = TextEditingController();
@@ -56,16 +58,16 @@ class Opinion extends StatelessWidget {
                     Text(
                       "Write Your Opinion",
                       style: GoogleFonts.poppins(
-                        fontSize: 25,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.teal[800],
+                        color: Colors.blue[800],
                       ),
                     ),
                     const SizedBox(width: 10),
                     Icon(
                       Icons.favorite,
                       size: 30,
-                      color: Colors.teal[700],
+                      color: Colors.blue[800],
                     ),
                   ],
                 ),
@@ -79,13 +81,13 @@ class Opinion extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [Colors.teal[300]!, Colors.teal[100]!],
+                        colors: [Colors.blue[800]!, Colors.blue[100]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.teal.withOpacity(0.2),
+                          color: Colors.blue.withOpacity(0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -102,6 +104,7 @@ class Opinion extends StatelessWidget {
 
                 // حقل إدخال النص
                 TextField(
+                  controller: opinion,
                   maxLines: 4,
                   decoration: InputDecoration(
                     filled: true,
@@ -128,15 +131,15 @@ class Opinion extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     SizedBox(
-                      height: 60,
-                      width: 180,
+                      height: 50,
+                      width: MediaQuery.of(context).size.width*.4,
                       child: SlideAction(
                         innerColor: Colors.white,
                         outerColor: Colors.red[600],
                         elevation: 10,
                         textColor: Colors.white,
                         sliderButtonIconSize: 10,
-                        sliderButtonIconPadding: 12,
+                        sliderButtonIconPadding: 8,
                         sliderButtonIcon: Icon(Icons.delete, size: 20, color: Colors.red),
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
@@ -150,7 +153,7 @@ class Opinion extends StatelessWidget {
                             Text(
                               "Exit",  // تصحيح التسمية إلى Exit
                               style: GoogleFonts.poppins(
-                                  fontSize: 22,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white
                               ),
@@ -161,20 +164,21 @@ class Opinion extends StatelessWidget {
                     ),
                     SizedBox(width: 10,),
                     SizedBox(
-                      height: 60,
-                      width: 180,
+                      height: 50,
+                      width: MediaQuery.of(context).size.width*.4,
                       child: SlideAction(
                         innerColor: Colors.white,
-                        outerColor: Colors.teal,
+                        outerColor: Colors.blue[800]!,
                         elevation: 10,
                         textColor: Colors.white,
                         sliderButtonIconSize: 10,
-                        sliderButtonIconPadding: 12,
-                        sliderButtonIcon: Icon(Icons.send, size: 20, color: Colors.teal),
+                        sliderButtonIconPadding: 8,
+                        sliderButtonIcon: Icon(Icons.send, size: 20, color: Colors.blue[800]),
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
-                        onSubmit: () {
-                          Future.delayed(const Duration(seconds: 1), () => print("Opinion Sent!"));
+                        onSubmit: () async { // أضف async هنا
+                          await FireBaseSetDataForLeader.addOpinionLeader(opinion.text); // استخدم await
+                          opinion.clear(); // مسح النص بعد اكتمال العملية
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -183,7 +187,7 @@ class Opinion extends StatelessWidget {
                             Text(
                               "Share",
                               style: GoogleFonts.poppins(
-                                  fontSize: 22,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white
                               ),

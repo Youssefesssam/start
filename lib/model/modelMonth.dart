@@ -1,22 +1,17 @@
-class ModelMonth{
+class ModelMonth {
   static const String collection = 'Month';
 
+  final int totalScoreOfMonth;
 
-  late int TotalScorOfMonth;
-  late int m1;//1 2 3 4
-  late int m2;//5 6 7 8
-  late int m3;//9 10 11 12
+  ModelMonth({required this.totalScoreOfMonth});
 
-  ModelMonth({
-    required this.TotalScorOfMonth
-  });
-  ModelMonth.fromJson(Map<String, dynamic> json) {
-    TotalScorOfMonth =json["TotalScorOfMonth"];
+  factory ModelMonth.fromJson(Map<String, dynamic> json) {
+    return ModelMonth(
+      totalScoreOfMonth: json["TotalScorOfMonth"] ?? 0, // تجنب القيم الفارغة
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'TotalScorOfMonth' :TotalScorOfMonth,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'TotalScorOfMonth': totalScoreOfMonth,
+  };
 }

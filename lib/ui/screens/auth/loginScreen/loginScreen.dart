@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:star_t/firebase/dataProvider.dart';
-import 'package:star_t/firebase/firebase.dart';
-import 'package:star_t/model/modelData.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
+import 'package:star_t/model/modelUser.dart';
 import 'package:star_t/ui/screens/homeScreen/homeScreenLeaders.dart';
 import 'package:star_t/ui/screens/homeScreen/homeScreenUsers.dart';
-import '../../../../firebase/authProvider.dart';
-import '../../../../utilites/appAssets.dart';
+import '../../../../utilites/appColors.dart';
 import '../registerScreen/regsterScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,144 +21,212 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
-  Widget build(BuildContext context) {
-    double heightScreen = MediaQuery.of(context).size.height;
-    double widthScreen = MediaQuery.of(context).size.width;
-    TextEditingController passwordController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
-    DataProvider dataProvider = Provider.of(context);
-    AuthProviders authProviders = Provider.of(context);
-
-
-    return Scaffold(
-
-        resizeToAvoidBottomInset: false,
-        body: SingleChildScrollView(
-          child: Container(
-            decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage(AppAssets.loginScreen),
-                    fit: BoxFit.fill)),
-            child: Container(
-              margin: const EdgeInsets.all(30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    height: heightScreen * .34,
-                  ),
-                  const Text("Login", textAlign: TextAlign.start,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 30),),
-                  const Divider(thickness: 4, height: 10),
-                  Container(
-                    height: heightScreen * .1,
-                  ),
-                  TextField(
-                    decoration: InputDecoration(
-                        labelText: "Email",
-                        suffixIcon: const Icon(Icons.account_circle_rounded),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        hoverColor: Colors.black
-                    ),
-                    controller: emailController,
-                  ),
-                  const SizedBox(height: 10,),
-                  TextField(
-                    controller: passwordController,
-                    decoration: InputDecoration(
-                        labelText: "password",
-                        suffixIcon: const Icon(Icons.lock),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20))
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 40,),
-
-                  Center(
-                      child: Card(
-                        elevation: 5,
-                        child: InkWell(
-                          onTap: () {
-
-
-                           signIn(emailController, passwordController, context);
-
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 40, right: 40),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Colors.blueAccent,
-                            ),
-                            child: const Text(
-                              "sign Up",
-                              style: TextStyle(fontSize: 30, color: Colors.black87),
-                            ),
-                          ),
-                        ),
-                      )
-                  ),
-                  const SizedBox(height: 10,),
-                  Center(child: InkWell(
-                      onTap: () {
-                        Navigator.pushReplacementNamed(context, RegisterScreen.routeName);
-                      },
-                      child: const Text("Create new account", style: TextStyle(decoration: TextDecoration.underline),))),
-                  SizedBox(height: heightScreen * .01,),
-                  Text("or sign in with ", textAlign: TextAlign.center,),
-                  SizedBox(height: heightScreen * .01,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: heightScreen * .02,
-                        backgroundImage: NetworkImage("https://th.bing.com/th/id/OIP.Fll7WPtNT6jrz1oBP8GbCgHaHj?rs=1&pid=ImgDetMain"),
-                      ),
-                      SizedBox(width: heightScreen * .005,),
-                      CircleAvatar(
-                        radius: heightScreen * .02,
-                        backgroundImage: NetworkImage("https://th.bing.com/th/id/OIP.d_aqJ-1Jz8Ok1Z9NYiYbVgAAAA?rs=1&pid=ImgDetMain"),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: heightScreen * .01,),
-                ],
-              ),
-            ),
-          ),
-        ));
+  void initState() {
+    super.initState();
   }
 
-  // دالة signIn المعدلة
-  void signIn(TextEditingController emailController, TextEditingController passwordController, BuildContext context) async {
-    DataProvider dataProvider = Provider.of<DataProvider>(context, listen: false);
+
+  void signIn(BuildContext context) async {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
       User? firebaseUser = credential.user;
-      String? userId = firebaseUser?.uid;
 
-      // حفظ userId و تحميل البيانات
-      dataProvider.uid = userId!;
-      if (userId != null) {
-        print("User ID: $userId");
+      if (firebaseUser != null) {
+        String userId = firebaseUser.uid;
+        String? email = firebaseUser.email;
 
-        // تحميل بيانات المستخدم بعد تسجيل الدخول الناجح
-
-
-        // الانتقال إلى HomeScreenUsers
-        Navigator.pushNamed(context, HomeScreenUsers.routeName);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId);
+        await prefs.setString('email', email ?? "");
+        MyUser? myUser= await FireBaseSetDataForUser.readUserData2(userId);
+        await prefs.setString("name", myUser!.name);
+        await prefs.setString("profileUrl", myUser.profileUrl);
+        await prefs.setString("code", myUser.code);
+        await prefs.setString("gender", myUser.gender);
+        await prefs.setString("phone", myUser.phone);
+        await prefs.setString("talent", myUser.talent);
+        await prefs.setString("university", myUser.university);
+        await prefs.setString("address", myUser.address);
+        Provider
+            .of<DataProvider>(context, listen: false)
+            .uid = userId;
+        Navigator.pushReplacementNamed(context, HomeScreenUsers.routeName);
       }
     } catch (e) {
       print("Error logging in: $e");
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // خلفية متدرجة
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.teal.shade800.withOpacity(0.2),
+                  Colors.teal.shade200.withOpacity(0.1),
+                ],
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header Section
+                Container(
+                  padding: EdgeInsets.only(
+                      top: 50, bottom: 30, left: 16, right: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: AppColors.appBarColor,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(50),
+                      bottomRight: Radius.circular(50),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.teal.shade800.withOpacity(0.3),
+                        blurRadius: 15,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: const Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Login",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          SizedBox(width: 48),
+                        ],
+                      ),
+                      SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+                // Form Section
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Container(
+                    margin: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(30),
+                    decoration:BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20)
+                    ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 40),
+                        _buildTextFieldWithIcon(
+                          "Email",
+                          Icons.email_outlined,
+                          emailController,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildTextFieldWithIcon(
+                          "Password",
+                          Icons.lock_outline,
+                          passwordController,
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 40),
+                        ElevatedButton(
+                          onPressed: () => signIn(context),
+                          child: Text(
+                            "Sign In",
+                            style: TextStyle(fontSize: 18,color: AppColors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal.shade700,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 5,
+                            shadowColor: Colors.teal.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pushReplacementNamed(context,
+                                  RegisterScreen.routeName),
+                          child: Text(
+                            "Create new account",
+                            style: TextStyle(
+                              color: Colors.teal.shade700,
+                              decoration: TextDecoration.underline,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextFieldWithIcon(String label,
+      IconData icon,
+      TextEditingController controller, {
+        bool obscureText = false,
+      }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.teal.shade600),
+        floatingLabelStyle: TextStyle(color: Colors.teal.shade700),
+        prefixIcon: Icon(icon, color: Colors.teal.shade500),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.teal.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.teal.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.teal.shade700, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+      style: TextStyle(color: Colors.black87, fontSize: 16),
+    );
+  }
 }
-
-

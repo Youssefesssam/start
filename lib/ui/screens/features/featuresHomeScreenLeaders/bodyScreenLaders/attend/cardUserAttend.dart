@@ -11,8 +11,9 @@ class CardUserAttend extends StatefulWidget {
   final User users;
    int score;
    int rank ;
+   String image ;
 
-  CardUserAttend({super.key, required this.users,required this.score,required this.rank});
+  CardUserAttend({super.key, required this.users,required this.score,required this.rank,required this.image});
 
   @override
   _CardUserAttend createState() => _CardUserAttend();
@@ -29,12 +30,14 @@ class _CardUserAttend extends State<CardUserAttend> {
         return Container(
           margin: const EdgeInsets.only(left: 5,right: 5),
           padding: const EdgeInsets.only(left: 30, right: 25, top: 0, bottom: 0),
-          height: MediaQuery.of(context).size.height * .11,
+          height: MediaQuery.of(context).size.height * .1,
           width: MediaQuery.of(context).size.width * .9,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
-              colors:AppColors.smoothColorTeal,
+              colors:[ Colors.deepPurple.shade800,
+                Colors.blue,
+                Colors.indigo.shade600,],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -55,7 +58,9 @@ class _CardUserAttend extends State<CardUserAttend> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   gradient: LinearGradient(
-                    colors:AppColors.smoothColorTeal,
+                    colors:[ Colors.deepPurple.shade800,
+                      Colors.blue,
+                      Colors.indigo.shade600,],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -67,10 +72,15 @@ class _CardUserAttend extends State<CardUserAttend> {
                     ),
                   ],
                 ),
-                child: const CircleAvatar(
+                child:CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage(AppAssets.profile),
+                  backgroundImage: widget.image != null && widget.image!.isNotEmpty
+                      ? (widget.image!.startsWith('http') || widget.image!.startsWith('https')
+                      ? NetworkImage(widget.image!) as ImageProvider
+                      : AssetImage(widget.image!))
+                      : const AssetImage(AppAssets.profile),
                 ),
+
               ),
               const SizedBox(
                 width: 15,
@@ -80,7 +90,7 @@ class _CardUserAttend extends State<CardUserAttend> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("${widget.users.name}",
-                      style: TextStyle(fontSize: 25, color: Colors.white)),
+                      style: TextStyle(fontSize: 20, color: Colors.white)),
                   Row(
                     children: [
                       Text("${widget.score}", style: TextStyle(color: Colors.white)),
@@ -94,25 +104,15 @@ class _CardUserAttend extends State<CardUserAttend> {
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-
-                      Icon(
-                        Icons.transgender,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
                   // عرض النقاط
 
                 ],
               ),
               const Spacer(),
                Text(
-                "Rank ${widget.rank}#",
+                "${widget.rank}#",
                 style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, color: Colors.yellow),
+                    fontSize: 25, fontWeight: FontWeight.bold, color: Colors.yellow),
               ),
             ],
           ),

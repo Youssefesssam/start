@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
 import 'package:star_t/utilites/appColors.dart';
 
-import '../../../../../../firebase/firebase.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseGetDataForUser.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
 
 class Taskuser extends StatefulWidget {
   const Taskuser({super.key});
@@ -63,7 +65,7 @@ class _TaskuserState extends State<Taskuser> {
                 ),
                 const SizedBox(height: 20),
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseUtils.recieveTask(),
+                  stream: FireBaseGetDataForLeader.recieveTask(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator(color: Colors.teal));
@@ -221,7 +223,7 @@ class _TaskuserState extends State<Taskuser> {
                     InkWell(
                       onTap: () {
                         // إرسال الإجابة
-                        FirebaseUtils.sendAnswer(answer: answer.text, name: 'authProvider_currentUser');
+                        FireBaseSetDataForUser.sendAnswer(answer: answer.text, name: 'authProvider_currentUser');
                         setState(() {
                           isAnswerSent = true;  // تغيير الحالة إلى أن الإجابة تم إرسالها
                         });

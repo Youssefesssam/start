@@ -1,23 +1,27 @@
 class ModelData {
-  static const String collection = 'data';
-  late int score;
+  static const String dataCollection = 'data';
+  static const String scoreCollection = 'scoreData';
+  late int leaderScore;
   late int massScore;
   late int communionScore;
   late int confessionScore;
   late int meetingScore;
 
-  ModelData({
-    required this.score,
+  ModelData(
+  {
+    required this.leaderScore,
     required this.massScore,
     required this.communionScore,
     required this.confessionScore,
     required this.meetingScore,
 
-  });
+  }
+  );
 
   factory ModelData.fromJson(Map<String, dynamic> data) {
     return ModelData(
-      score: data['score'] ?? 0,
+
+      leaderScore: data['leaderScore'] ?? 0,
       communionScore: data['communionScore'] ?? 0,
       confessionScore: data['confessionScore'] ?? 0,
       massScore: data['massScore'] ?? 0,
@@ -28,7 +32,7 @@ class ModelData {
 
   Map<String, dynamic> toJson() {
     return {
-      'score': score,
+      'leaderScore': leaderScore,
       'massScore': massScore,
       'communionScore': communionScore,
       'confessionScore': confessionScore,

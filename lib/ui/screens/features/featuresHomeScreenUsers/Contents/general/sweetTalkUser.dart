@@ -1,22 +1,61 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:slide_to_act/slide_to_act.dart';
+import 'package:star_t/firebase/authProvider.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import 'package:star_t/model/modelEvent.dart';
+import 'package:star_t/model/modelSweetTalk.dart';
 import 'package:star_t/utilites/appAssets.dart';
-import '../../../../../../model/modelSweetTalk.dart';
 
-class SweetTalkUser extends StatefulWidget {
+import '../../../../../../firebase/dataProvider.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
+import '../../../../../../firebase/providerTotalScore.dart';
+import '../../../../../../utilites/appTexts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../../../utilites/consts.dart';
+
+
+class  SweetTalkUser extends StatefulWidget {
+
   SweetTalkUser({super.key});
 
   @override
-  _SweetTalkUserState createState() => _SweetTalkUserState();
+  State<SweetTalkUser> createState() => _SweetTalkUser();
 }
 
-class _SweetTalkUserState extends State<SweetTalkUser> {
+class  _SweetTalkUser extends State< SweetTalkUser> {
   bool _isExpanded = false;
+  bool isFirstSeen = AppTexts.seenSweet ;
+
+
+  int ScoreSeenSweetTalk = 0;
+
 
   @override
   Widget build(BuildContext context) {
+    DataProvider dataProvider = Provider.of(context);
+    ProviderTotalScore providerTotalScore =
+    Provider.of<ProviderTotalScore>(context, listen: false);
+    int count = dataProvider.currentWeekNum ;
+    AuthProviders authProviders = Provider.of(context);
+    final GlobalKey<SlideActionState> _slideActionKey = GlobalKey<SlideActionState>();
+    bool _showSlideAction =true;
+    void dispose() {
+      // تأكد من أن الأنميشن يتم التخلص منه فقط إذا كانت الـ State ما زالت موجودة
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (mounted) {
+          setState(() {
+            _showSlideAction = true;
+          });
+        }
+      });
+      super.dispose();
+    }
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -46,7 +85,7 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                   height: 4,
                   width: 50,
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: Colors.grey[500],
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -54,7 +93,7 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Sweet talk",
+                      "Sweet Talk",
                       style: GoogleFonts.poppins(
                         fontSize: 26,
                         fontWeight: FontWeight.w600,
@@ -62,7 +101,10 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    Icon(Icons.favorite,color: Colors.teal,)
+                    Icon(
+                      Icons.favorite,
+                      color: Colors.teal,
+                    )
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -92,7 +134,6 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                             radius: 30,
                           ),
                           const SizedBox(width: 20),
-
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -105,45 +146,170 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                                 ),
                               ),
                               const SizedBox(height: 5),
-
                             ],
                           ),
                         ],
                       ),
                       const SizedBox(height: 15),
                       // Event Image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.asset(
-                          AppAssets.profile, // Replace with your image asset
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: MediaQuery.of(context).size.height * .45,
-                        ),
-                      ),
-                      SizedBox(height: 15),
-                      Row(
-                        children: [
-                          Icon(Icons.favorite, size: 30, color: Colors.red),
-                          SizedBox(width: 10),
-                          Icon(Icons.mode_comment_rounded, size: 30, color: Colors.grey[500]),
-
-                        ],
-                      ),
                       StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance.collection(ModelSweetTalk.collection).snapshots(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Center(child: CircularProgressIndicator(color: Colors.teal));
+                          if (!snapshot.hasData || snapshot.data == null) {
+                            return const Center(child: CircularProgressIndicator());
                           }
                           var docs = snapshot.data!.docs;
-                          String lastMessage = docs.isNotEmpty ? docs.first['talk'] : "No words yet";
+                          String? imageUrl;
+                          // التحقق من وجود بيانات والتحقق من وجود الصورة
+                          if (docs.isNotEmpty && docs.first.data() != null) {
+                            var data = docs.first.data() as Map<String, dynamic>;
+                            imageUrl = data.containsKey('image') ? data['image'] as String? : null;
+                          }
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: imageUrl != null && imageUrl.isNotEmpty
+                                ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: MediaQuery.of(context).size.height * .45,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  AppAssets.nothing,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: MediaQuery.of(context).size.height * .45,
+                                );
+                              },
+                            )
+                                : Image.asset(
+                              AppAssets.nothing,
+                              fit: BoxFit.fitWidth,
+                              width: double.infinity,
+                              height: MediaQuery.of(context).size.height * .45,
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 15),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * .04,
+                        width: MediaQuery.of(context).size.width * .4,
+                        child: Center(
+                          child: Builder(
+                            builder: (context) {
+                              final GlobalKey<SlideActionState> _key = GlobalKey();
+                              return Padding(
+                                padding: const EdgeInsets.all(.0),
+                                child: SlideAction(
+                                  innerColor: Colors.white,
+                                  sliderButtonIconPadding: 4,
+                                  sliderButtonIcon: const Icon(
+                                    Icons.person,
+                                    size: 22,
+                                    color: Colors.teal,
+                                  ),
+                                  submittedIcon: const Icon(
+                                    Icons.favorite,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                  outerColor: Colors.teal,
+                                  enabled: true,
+                                  elevation: 0,
+                                  textColor: Colors.white,
+                                  sliderRotate: true,
+                                  height: 80,
+                                  key: _key,
+                                  onSubmit: () async {
+                                    // Perform actions on submit
+                                    await Consts.getSweetTalkId();
+                                    CollectionReference sweetTalkRef = FirebaseFirestore.instance.collection('sweetTalk');
+                                    QuerySnapshot snapshot = await sweetTalkRef.get();
+
+                                    if (snapshot.docs.isNotEmpty) {
+                                      var doc = snapshot.docs.first;
+                                      String docId = doc.id;
+                                      if (doc.id== authProviders.sweetId || authProviders.sweetId == null) {
+                                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                                        await prefs.setString("sweetId", docId);
+                                        authProviders.setSweetId(docId);
+
+                                        int currentScore = await FireBaseSetDataForUser.getScore(
+                                          yearId: '1',
+                                          weekId: authProviders.week.toString(),
+                                          monthId: authProviders.currentMonth.toString(),
+                                          scoreType: 'scoreSeenUserSweetTalk',
+                                          userId: authProviders.userId!,
+                                        );
+
+                                        int updatedScore = currentScore + 5;
+
+                                        await FireBaseSetDataForLeader.updateScore(
+                                          yearId: '1',
+                                          weekId: authProviders.week.toString(),
+                                          monthId: authProviders.currentMonth.toString(),
+                                          newValue: updatedScore,
+                                          scoreType: 'scoreSeenUserSweetTalk',
+                                          userId: authProviders.userId!,
+                                        );
+                                      }
+                                    }
+
+                                    if (mounted) {
+                                      Future.delayed(Duration(seconds: 1), () {
+                                        if (mounted) {
+                                          _key.currentState?.reset();
+                                        }
+                                      });
+                                    }
+                                  },
+
+                                  child: Row(
+                                    children: [
+                                      const Spacer(),
+                                      Expanded(
+                                        child: Text(
+                                          "Seen",
+                                          style: GoogleFonts.aboreto(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),                      SizedBox(
+                        height: 10,
+                      ),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection(ModelSweetTalk.collection)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || snapshot.data == null) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+
+                          var docs = snapshot.data!.docs;
+                          String lastMessage = docs.isNotEmpty
+                              ? docs.first['talk'] ?? "No words yet"
+                              : "No words yet";
 
                           return Builder(
                             builder: (context) {
                               bool isLongText = lastMessage.length > 100;
                               String displayText = isLongText
-                                  ? (_isExpanded ? lastMessage : lastMessage.substring(0, 100) + "...")
+                                  ? (_isExpanded
+                                  ? lastMessage
+                                  : lastMessage.substring(0, 100) + "...")
                                   : lastMessage;
 
                               return Column(
@@ -151,14 +317,14 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                                 children: [
                                   RichText(
                                     text: TextSpan(
-                                      style: const TextStyle(fontSize: 18, color: Colors.black),
+                                      style: const TextStyle(
+                                          fontSize: 18, color: Colors.black),
                                       children: [
-                                        TextSpan(
-                                          text: displayText,
-                                        ),
+                                        TextSpan(text: displayText),
                                         if (isLongText)
                                           TextSpan(
-                                            text: _isExpanded ? " Less" : " More",
+                                            text:
+                                            _isExpanded ? " Less" : "More",
                                             style: GoogleFonts.poppins(
                                               color: Colors.teal,
                                               fontSize: 14,
@@ -183,7 +349,6 @@ class _SweetTalkUserState extends State<SweetTalkUser> {
                     ],
                   ),
                 ),
-
               ],
             ),
           ),

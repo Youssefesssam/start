@@ -39,5 +39,8 @@ static const String gold             = 'assets/newIcon/gold.png';
 static const String silver           = 'assets/newIcon/silver.png';
 static const String bronze           = 'assets/newIcon/bronze.png';
 static const String crown            = 'assets/newIcon/crown.png';
+static const String gallery           = 'assets/icons/gallery.png';
+static const String nothing           = 'assets/newIcon/nothing.png';
+static const String loder           = 'assets/models/loder.glb';
 
 }

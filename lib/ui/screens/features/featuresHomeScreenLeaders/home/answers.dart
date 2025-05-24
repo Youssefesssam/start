@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
 import 'package:star_t/utilites/appColors.dart';
 
 class Answers extends StatefulWidget {
@@ -36,7 +36,7 @@ class _AnswersState extends State<Answers> {
           elevation: 15,
         ),
         body: FutureBuilder<List<Map<String, String>>>(
-          future: FirebaseUtils.receiveAnswers(),
+          future: FireBaseGetDataForLeader.receiveAnswers(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(

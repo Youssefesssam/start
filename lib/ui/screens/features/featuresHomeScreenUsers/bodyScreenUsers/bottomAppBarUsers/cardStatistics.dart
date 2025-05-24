@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:star_t/utilites/appColors.dart';
 
 class cardStatistics extends StatelessWidget {
   final String title;
@@ -20,24 +21,24 @@ class cardStatistics extends StatelessWidget {
       children: [
         Container(
 
-          padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.only(bottom: 60, left: 10, right: 10),
-          decoration: const BoxDecoration(
+          padding: const EdgeInsets.all(15),
+          margin: const EdgeInsets.only(bottom: 10, left: 15, right: 20,top: 10),
+          decoration:  BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.brown,Colors.brown],
+              colors: AppColors.appBarColor,
                 end: Alignment(1, 2),
             ),
             borderRadius: BorderRadius.all(Radius.circular(20)),
           ),
           child: Row(
             children: [
-              Column(
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    "${title}: ",
                     style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 20,
                         color: Colors.white,
                         fontWeight: FontWeight.bold),
                   ),
@@ -45,7 +46,7 @@ class cardStatistics extends StatelessWidget {
                   Text(
                     "$score", // عرض النقاط
                     style: const TextStyle(
-                      fontSize: 30,
+                      fontSize: 20,
                       color: Colors.white, //Color(0xfffbb800),
                       fontWeight: FontWeight.bold,
                     ),

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import '../../../../../../model/modelMonth.dart';
 import '../../../../../../model/modelUser.dart';
 import '../../../../../../model/modelYear.dart';
 import '../../../../../../model/modelweek.dart';
+import '../../../../../../utilites/appColors.dart';
 import 'cardStatistics.dart';
 
 class Statistics extends StatefulWidget {
@@ -24,28 +24,28 @@ class Statistics extends StatefulWidget {
 
 class _StatisticsState extends State<Statistics> {
   final List<String> month = [
-    'month 1',
-    'month 2',
-    'month 3',
-    'month 4',
-    'month 5',
-    'month 6',
-    'month 7',
-    'month 8',
-    'month 9',
-    'month 10',
-    'month 11',
-    'month 12',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   final List<String> week = ['week 1', 'week 2', 'week 3', 'week 4'];
   int selectedMonthIndex = 0;
   int selectedWeekIndex = 0;
   List<String> score = [
     'score',
-    'meetingScore',
-    'communionScore',
-    'confessionScore',
-    'massScore',
+    'meetingScoreDB',
+    'communionScoreDB',
+    'confessionScoreDB',
+    'massScoreDB',
   ];
 
   @override
@@ -54,18 +54,23 @@ class _StatisticsState extends State<Statistics> {
     AuthProviders authProviders = Provider.of(context);
     var collectionReference = FirebaseFirestore.instance
         .collection(MyUser.collection)
-        .doc('5u0qEXBm0eaW7J0n5Y8VhF5WdBD2')
+        .doc(authProviders.userId)
         .collection(ModelYear.collection)
         .doc('1') // تأكد أن هذه الـ ID صحيحة
         .collection(ModelMonth.collection)
         .doc((selectedMonthIndex + 1).toString().padLeft(2, '0')) // month dynamic
         .collection(ModelWeek.collection)
-        .doc('week_${selectedWeekIndex + 1}') // week dynamic
-        .collection(ModelData.collection);
+        .doc(selectedWeekIndex.toString()) // week dynamic
+        .collection(ModelData.dataCollection);
 
-    return Scaffold(
-      backgroundColor: Color(0xfff7eddf),
-      body: Column(
+    return   Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: AppColors.backGround,
+          begin: Alignment.bottomCenter,
+        ),
+      ),
+      child:  Column(
         children: [
           Container(
             margin: EdgeInsets.only(top: 50,bottom: 20,right: 50,left: 50),
@@ -73,7 +78,7 @@ class _StatisticsState extends State<Statistics> {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 150, // ارتفاع الـ Picker
+                    height: 120, // ارتفاع الـ Picker
                     child: CupertinoPicker(
                       itemExtent: 50, // ارتفاع كل عنصر
                       scrollController: FixedExtentScrollController(
@@ -90,7 +95,7 @@ class _StatisticsState extends State<Statistics> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.brown,
+                              color: Colors.white,
                             ),
                           ),
                         );
@@ -100,7 +105,7 @@ class _StatisticsState extends State<Statistics> {
                 ),
                 Expanded(
                   child: SizedBox(
-                    height: 150, // ارتفاع الـ Picker
+                    height: 120, // ارتفاع الـ Picker
                     child: CupertinoPicker(
                       itemExtent: 50, // ارتفاع كل عنصر
                       scrollController: FixedExtentScrollController(
@@ -117,7 +122,7 @@ class _StatisticsState extends State<Statistics> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
-                              color: Colors.brown,
+                              color: Colors.white,
                             ),
                           ),
                         );
@@ -134,7 +139,7 @@ class _StatisticsState extends State<Statistics> {
               builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
                 if (streamSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Colors.brown,), // عرض اللودر
+                    child: CircularProgressIndicator(color: Colors.white,), // عرض اللودر
                   );
                 }
                 if (!streamSnapshot.hasData ||
@@ -150,7 +155,7 @@ class _StatisticsState extends State<Statistics> {
                           subtitle: '', // Adjust subtitle as needed
                         ),
                         cardStatistics(
-                          mod: 100,
+                          mod:100,
                           title: 'meetingScore', // Displaying field name dynamically
                           score: 0, // Safeguard missing values
                           subtitle: '', // Adjust subtitle as needed

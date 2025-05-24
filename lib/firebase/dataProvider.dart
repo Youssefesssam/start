@@ -16,10 +16,10 @@ class DataProvider extends ChangeNotifier {
   Future<void> getAllUserFromFirebase(String userId) async {
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection(MyUser.collection) // اسم المجموعة الرئيسية
-          .doc(userId) // الوثيقة الخاصة بالمستخدم
-          .collection(ModelData.collection) // المجموعة الفرعية
-          .doc(userId) // الوثيقة داخل المجموعة الفرعية
+          .collection(MyUser.collection)
+          .doc(userId)
+          .collection(ModelData.dataCollection)
+          .doc(userId)
           .get();
 
       if (userDoc.exists) {

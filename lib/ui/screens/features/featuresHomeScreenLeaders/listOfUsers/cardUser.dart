@@ -9,10 +9,11 @@ import '../../../../../utilites/appAssets.dart';
 class CardUser extends StatefulWidget {
   final MyUser users;
    int score;
+   String image;
    int rank ;
   final String userId; // إضافة الـ userId هنا
 
-  CardUser({super.key, required this.users, required this.userId,required this.score,required this.rank});
+  CardUser({super.key, required this.users, required this.userId,required this.score,required this.rank,required this.image});
 
   @override
   _CardUserState createState() => _CardUserState();
@@ -30,8 +31,7 @@ class _CardUserState extends State<CardUser> {
 
   @override
   Widget build(BuildContext context) {
-    AuthProviders authProviders = Provider.of<AuthProviders>(context);
-    DataProvider dataProvider = Provider.of<DataProvider>(context);
+
 
         return Container(
           margin: const EdgeInsets.only(left: 5,right: 5),
@@ -41,7 +41,9 @@ class _CardUserState extends State<CardUser> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
-              colors:AppColors.smoothColorTeal,
+              colors:[ Colors.deepPurple.shade800,
+                Colors.blue,
+                Colors.indigo.shade600,],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -62,7 +64,9 @@ class _CardUserState extends State<CardUser> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   gradient: LinearGradient(
-                    colors:AppColors.smoothColorTeal,
+                    colors:[ Colors.deepPurple.shade800,
+                      Colors.blue,
+                      Colors.indigo.shade600,],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -74,10 +78,15 @@ class _CardUserState extends State<CardUser> {
                     ),
                   ],
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 30,
-                  backgroundImage: AssetImage(AppAssets.profile),
+                  backgroundImage: widget.image != null && widget.image!.isNotEmpty
+                      ? (widget.image!.startsWith('http') || widget.image!.startsWith('https')
+                      ? NetworkImage(widget.image!) as ImageProvider
+                      : AssetImage(widget.image!))
+                      : const AssetImage(AppAssets.profile),
                 ),
+
               ),
               const SizedBox(
                 width: 15,
@@ -86,8 +95,13 @@ class _CardUserState extends State<CardUser> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("${widget.users.name}",
-                      style: TextStyle(fontSize: 25, color: Colors.white)),
+
+                  widget.users.name != null
+                      ? Text(
+                    "${widget.users.name}",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  )
+                      : Text(""),
                   Row(
                     children: [
                       Text("${widget.score}", style: TextStyle(color: Colors.white)),
@@ -101,30 +115,17 @@ class _CardUserState extends State<CardUser> {
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      Text("${widget.users.gender}",
-                          style: TextStyle(fontSize: 14, color: Colors.white)),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Icon(
-                        Icons.transgender,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
                   // عرض النقاط
 
                 ],
               ),
               const Spacer(),
+
                Text(
-                "Rank ${widget.rank}#",
+                " ${widget.rank}#",
                 style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, color: Colors.yellow),
-              ),
+                    fontSize: 25, fontWeight: FontWeight.bold, color: Colors.yellow),
+              )
             ],
           ),
         );

@@ -2,15 +2,17 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/bodyScreenLaders/attend/cardUserAttend.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/bodyScreenLaders/attend/menuAttend.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/listOfUsers/listOfUsers.dart';
 import 'package:star_t/utilites/appColors.dart';
 import '../../../../../../firebase/authProvider.dart';
 import '../../../../../../firebase/dataProvider.dart';
-import '../../../../../../model/modelUser.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseGetDataForUser.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
 import '../../../../../../model/modelUserAttend.dart';
-import '../../listOfUsers/menu.dart';
 
 class Attend extends StatefulWidget {
   static const String routeName = "Attend";
@@ -24,63 +26,54 @@ class Attend extends StatefulWidget {
 class _Attend extends State<Attend> {
   int? selectedCardIndex;
   int? currentWeekNum;
+
   TextEditingController userAttendence = TextEditingController();
   String searchUserAttend = '';
 
-  Future<int> fetchCurrentWeek() async {
-    try {
-      int? week = await FirebaseUtils.getCurrentWeek();
-      print("Fetched current week: $week");
-
-      if (week != null) {
-        return week;
-      } else {
-        print("Error: week is null.");
-        return 1; // Default value
-      }
-    } catch (e) {
-      print("Error fetching current week: $e");
-      throw Exception("Failed to fetch current week.");
-    }
-  }
 
   @override
   void initState() {
     super.initState();
-    fetchCurrentWeek().then((weekNum) {
+    FireBaseGetDataForLeader.fetchCurrentWeek().then((weekNum) {
       if (weekNum != null) {
         setState(() {
           currentWeekNum = weekNum;
         });
-
-        if (currentWeekNum != null) {
-          print(currentWeekNum);
-          print('++++++++++++++++----------+++++++++++++++++');
-
-          Provider.of<AuthProviders>(context, listen: false)
-              .readUsersAttendToLeaders(numWeek: currentWeekNum!);
-        }
+        Provider.of<AuthProviders>(context, listen: false)
+            .readUsersAttendToLeaders(
+            numWeek: weekNum); // استخدم weekNum مباشرةً
       }
+    }).catchError((error) {
+      print("Error fetching current week: $error");
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    //FireBaseGetDataForLeader.saveDateInProvider(context);
     final Map<String, dynamic> args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+            {};
     bool isUpdate = args['update'] ?? false;
     int? passedWeek = args['week'];
-
     AuthProviders authProviders = Provider.of(context);
-    DataProvider dataProvider = Provider.of(context);
 
-    // فلترة المستخدمين بناءً على البحث
+    // Filter users based on the search query
     List<User> filteredUsers = authProviders.usersAttend
         .where((user) =>
     searchUserAttend.isEmpty ||
-        (user.name.toLowerCase().startsWith(searchUserAttend.toLowerCase()))
-    )
+        (user.name
+            .toLowerCase()
+            .startsWith(searchUserAttend.toLowerCase())))
         .toList();
+
+    // Reset selectedCardIndex if the list becomes empty
+    if (filteredUsers.isEmpty && selectedCardIndex != null) {
+      setState(() {
+        selectedCardIndex = null;
+      });
+    }
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(0)),
@@ -90,9 +83,32 @@ class _Attend extends State<Attend> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton:FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, ListOfUsers.routeName);
+          },
+          elevation: 0, // إزالة الظل
+          shape: CircleBorder(
+            side: BorderSide(color: Colors.white, width: 1.5), // إطار أسود
+          ),
+          child: Icon(Icons.add, size: 35, color: Colors.white), // أيقونة سوداء
+        ),
         body: Stack(
           children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.indigo.withOpacity(0.4),
+                    Colors.blueGrey.withOpacity(0.4),
+                    Colors.blue.withOpacity(0.4),
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -103,7 +119,8 @@ class _Attend extends State<Attend> {
               ],
             ),
             if (selectedCardIndex != null) _buildBlurredBackground(),
-            if (selectedCardIndex != null) _buildSelectedCardOverlay(authProviders, filteredUsers),
+            if (selectedCardIndex != null)
+              _buildSelectedCardOverlay(authProviders, filteredUsers),
             if (isUpdate) _buildUpdateButton(),
           ],
         ),
@@ -116,23 +133,23 @@ class _Attend extends State<Attend> {
       margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 0),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.darkgrey,
+        color: Colors.black.withOpacity(.7),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: AppColors.mainColor.withOpacity(0.5),
+          color: Colors.black.withOpacity(0.8),
           width: 1.5,
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.search, color: AppColors.mainColor, size: 35),
+          Icon(Icons.search, color: Colors.blue, size: 35),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: userAttendence,
               decoration: InputDecoration(
                 hintText: "Search...",
-                hintStyle: TextStyle(color: AppColors.mainColor),
+                hintStyle: TextStyle(color: Colors.blue),
                 border: InputBorder.none,
               ),
               style: TextStyle(color: AppColors.white),
@@ -146,19 +163,18 @@ class _Attend extends State<Attend> {
           ),
           InkWell(
             onTap: () {
+             FireBaseGetDataForLeader.saveDateInProvider(context);
               Navigator.pushNamed(context, ListOfUsers.routeName);
             },
-            child: Icon(Icons.people, color: AppColors.mainColor, size: 35),
+            child: Icon(Icons.people, color:Colors.blue, size: 35),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAttendanceList(AuthProviders authProviders, List<User> filteredUsers) {
-    if (filteredUsers.isEmpty) {
-      return Center(child: Text("No users found.",style: TextStyle(color: Colors.white),));
-    }
+  Widget _buildAttendanceList(
+      AuthProviders authProviders, List<User> filteredUsers) {
     return ListView.builder(
       itemCount: filteredUsers.length,
       itemBuilder: (BuildContext context, int index) {
@@ -168,7 +184,7 @@ class _Attend extends State<Attend> {
           onDismissed: (direction) {
             setState(() {
               authProviders.usersAttend.removeAt(index);
-              FirebaseUtils.deleteDec(authProviders.currentUser?.id);
+              FireBaseSetDataForLeader.deleteDec(authProviders.currentUser?.id);
               if (selectedCardIndex == index) {
                 selectedCardIndex = null;
               }
@@ -179,13 +195,14 @@ class _Attend extends State<Attend> {
             onTap: () {
               setState(() {
                 if (index < filteredUsers.length) {
-                  selectedCardIndex = (selectedCardIndex == index) ? null : index;
+                  selectedCardIndex =
+                  (selectedCardIndex == index) ? null : index;
                 }
               });
             },
             child: Container(
               margin: const EdgeInsets.all(15),
-              child: _buildCard(filteredUsers[index]), // استخدام filteredUsers هنا
+              child: _buildCard(filteredUsers[index]), // Use filteredUsers here
             ),
           ),
         );
@@ -240,11 +257,17 @@ class _Attend extends State<Attend> {
     );
   }
 
-  Widget _buildSelectedCardOverlay(AuthProviders authProviders, List<User> filteredUsers) {
-    // تحقق من أن filteredUsers ليست فارغة وأن selectedCardIndex صالح
-    if (filteredUsers.isEmpty || selectedCardIndex == null || selectedCardIndex! >= filteredUsers.length) {
-      return Container(); // إرجاع حاوية فارغة إذا كانت القائمة فارغة أو الفهرس غير صالح
+  Widget _buildSelectedCardOverlay(
+      AuthProviders authProviders, List<User> filteredUsers) {
+    // Ensure the list is not empty and the selectedCardIndex is valid
+    if (filteredUsers.isEmpty ||
+        selectedCardIndex == null ||
+        selectedCardIndex! >= filteredUsers.length) {
+      return Container(); // Return an empty container if conditions are not met
     }
+
+    // Safely access the user at the selected index
+    User selectedUser = filteredUsers[selectedCardIndex!];
 
     return Positioned(
       top: MediaQuery.of(context).size.height * 0.12,
@@ -253,9 +276,11 @@ class _Attend extends State<Attend> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildCard(filteredUsers[selectedCardIndex!]),  // استخدام filteredUsers هنا
+          _buildCard(selectedUser),
+          // Use the safely accessed user
           const SizedBox(height: 20),
-          _buildMenu(authProviders.users[selectedCardIndex!], currentWeekNum!),
+          _buildMenu(selectedUser, currentWeekNum ?? 1),
+          // Provide a default week number if null
         ],
       ),
     );
@@ -268,16 +293,18 @@ class _Attend extends State<Attend> {
       right: 20,
       child: ElevatedButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Update', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: const Text('Update',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   Widget _buildCard(User user) {
-    return CardUserAttend(users: user, score: 300, rank: 1);
+    return CardUserAttend(users: user, score: 300, rank: 1,image: "null",);
   }
 
-  Widget _buildMenu(MyUser user, int weekNum) {
-    return Menu(user: user, userId: user.id, weekNum: weekNum, onCloseMenu: () {});
+  Widget _buildMenu(User user, int weekNum) {
+    return MenuAttend(
+        user: user, userId: user.id, weekNum: weekNum, onCloseMenu: () {});
   }
 }

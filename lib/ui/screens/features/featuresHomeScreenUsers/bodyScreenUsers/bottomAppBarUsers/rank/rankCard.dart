@@ -7,15 +7,15 @@ import 'package:star_t/utilites/appAssets.dart';
 class RankCard extends StatelessWidget {
   final String name;
   final int rank;
-  final String profileImage;
   final int score;
+  final String profileImage; // تم إضافة متغير للصورة
 
   const RankCard({
     Key? key,
     required this.name,
     required this.rank,
-    required this.profileImage,
     required this.score,
+    required this.profileImage, // تمرير الصورة في الـ Constructor
   }) : super(key: key);
 
   @override
@@ -49,10 +49,12 @@ class RankCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 20),
-          // عرض صورة الملف الشخصي
+          // عرض صورة الملف الشخصي بناءً على الرابط الذي يتم تمريره
           CircleAvatar(
             radius: 30,
-            backgroundImage: AssetImage(profileImage), // الصورة الشخصية
+            backgroundImage: profileImage.startsWith('http')
+                ? NetworkImage(profileImage) // تحميل الصورة من الرابط إذا كان الرابط يبدأ بـ 'http'
+                : AssetImage(profileImage) as ImageProvider, // تحميل الصورة من الأصول إذا لم يكن رابط
           ),
           const SizedBox(width: 20),
           // عرض الاسم والنقاط
@@ -63,9 +65,10 @@ class RankCard extends StatelessWidget {
               Text(
                 name,
                 style: GoogleFonts.adamina(
-                    fontSize: 18, color: Colors.black),
+                  fontSize: 15,
+                  color: Colors.black,
+                ),
               ),
-
               const SizedBox(height: 5),
               Text(
                 "$score points",
@@ -80,8 +83,8 @@ class RankCard extends StatelessWidget {
           // عرض التاج بناءً على المركز
           Image.asset(
             AppAssets.crown,
-            height: 50,
-            width: 50,
+            height: 40,
+            width: 40,
             color: rank == 1
                 ? null // لون ذهبي للمركز الأول
                 : rank == 2

@@ -1,239 +1,279 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:star_t/firebase/authProvider.dart';
 import 'package:star_t/firebase/dataProvider.dart';
-import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/listOfUsers/listOfUsers.dart';
+import '../../../../../firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import '../../../../../firebase/providerTotalScore.dart';
 
 class Week extends StatefulWidget {
-  int currentSelectedWeek;
-  Week({super.key,required this.currentSelectedWeek});
+  final int currentSelectedWeek;
+
+  const Week({super.key, required this.currentSelectedWeek});
 
   @override
   State<Week> createState() => _WeekState();
 }
 
-class _WeekState extends State<Week> {
-  final List<String> letters = [
-    'week 1', 'week 2' , 'week 3', 'week 4',
-    'week 5', 'week 6', 'week 7','week 8',
-    'week 9', 'week 10'  , 'week 11', 'week 12', 'week 13',
-    'week 14', 'week 15' , 'week 16', 'week 17', 'week 18',
-    'week 19', 'week 20 ' , 'week 21', 'week 22', 'week 23',
-    'week 24', 'week 25' , 'week 26', 'week 27', 'week 28',
-    'week 29', 'week 30' , 'week 31', 'week 32', 'week 33',
-    'week 34', 'week 35' , 'week 36', 'week 37', 'week 38',
-    'week 39', 'week 40' , 'week 41', 'week 42', 'week 43',
-    'week 44', 'week 45' , 'week 46', 'week 47','week 48',
-  ];
+class _WeekState extends State<Week> with AutomaticKeepAliveClientMixin {
   late int week;
+  final List<String> weeksList = List.generate(
+    48,
+        (index) => 'Week ${index + 1}',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    week = widget.currentSelectedWeek;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    FireBaseGetDataForLeader.saveDateInProvider(context);
+  }
+
+  Future<void> _confirmSelection(BuildContext context) async {
+    final DataProvider dataProvider = Provider.of(context, listen: false);
+    final AuthProviders authProviders = Provider.of(context, listen: false);
+    final ProviderTotalScore providerTotalScore = Provider.of(context, listen: false);
+
+    int? nextWeek = await FireBaseGetDataForLeader.getNextWeek();
+    int? previousWeek = await FireBaseGetDataForLeader.getPreviousWeek();
+    int selectedWeek = week + 1;
+
+    bool isValidSelection = selectedWeek <= nextWeek;
+    bool isOldSelection = selectedWeek < (previousWeek + 1);
+    bool isCurrentSelection = selectedWeek == nextWeek;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: isOldSelection ? Colors.red[100] : null,
+        title: Text(
+          'Confirm Selection',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: isOldSelection ? Colors.red[900] : Theme.of(context).primaryColor,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Next Week: $nextWeek | Current Week: ${previousWeek + 1}'),
+            const SizedBox(height: 15),
+            Text(
+              'You selected Week $selectedWeek',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isValidSelection
+                    ? (isOldSelection ? Colors.red[900] : Colors.black)
+                    : Colors.red,
+              ),
+            ),
+            if (isCurrentSelection)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text('Perfect choice!', style: TextStyle(color: Colors.green)),
+                  Icon(Icons.grade_rounded, color: Colors.green),
+                ],
+              ),
+            if (isOldSelection)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  '⚠ You are selecting a past week! Be careful.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              ),
+            if (!isValidSelection)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  '⚠ Cannot select a week greater than Next Week!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+              isValidSelection ? (isOldSelection ? Colors.red : Colors.teal) : Colors.grey,
+            ),
+            onPressed: isValidSelection
+                ? () {
+              Navigator.pop(context);
+              providerTotalScore.resetScores();
+              FireBaseSetDataForLeader.numWeek(numWeek: selectedWeek);
+              FireBaseSetDataForLeader.updateCurrentWeek(selectedWeek);
+              FireBaseSetDataForLeader.updateNextWeek(selectedWeek);
+              FireBaseSetDataForLeader.updatePreviousWeek(selectedWeek - 1);
+
+              Navigator.pop(context, selectedWeek);
+            }
+                : null,
+            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _exitAction(BuildContext context) {
+    FireBaseSetDataForLeader.numWeek(numWeek: week);
+    Navigator.pop(context, week);
+  }
+
+  void _updateAction(BuildContext context) {
+    final AuthProviders authProviders = Provider.of(context, listen: false);
+    authProviders.setCurrentWeek(week);
+    authProviders.setCurrentMonth(week);
+
+    Navigator.pop(context, week);
+    Navigator.pushNamed(
+      context,
+      ListOfUsers.routeName,
+      arguments: {'week': week + 1, 'update': true},
+    );
+    FireBaseSetDataForLeader.updateWeek(week + 1);
+  }
+
   @override
   Widget build(BuildContext context) {
-    DataProvider dataProvider=Provider.of(context);
+    super.build(context); // Needed for AutomaticKeepAliveClientMixin
+
     return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
-          boxShadow: [
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Divider(
+            thickness: 3,
+            indent: 150,
+            endIndent: 150,
+            color: Colors.teal,
+          ),
+          const Text(
+            'Select Week',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 150,
+            child: CupertinoPicker(
+              itemExtent: 50,
+              scrollController: FixedExtentScrollController(initialItem: week),
+
+              onSelectedItemChanged: (index) {
+                week = index+1;
+              },
+              children: weeksList.map((w) {
+                return Center(child: Text(w));
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              ActionButton(
+                text: 'Exit',
+                color: const [Color(0xff9b1010), Colors.red],
+                onTap: () => _exitAction(context),
+              ),
+              ActionButton(
+                text: 'Confirm',
+                color: [Colors.teal[800]!, Colors.teal[600]!],
+                onTap: () => _confirmSelection(context),
+              ),
+              ActionButton(
+                text: 'Update',
+                color: [Colors.blueAccent, Colors.cyan[700]!],
+                onTap: () => _updateAction(context),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+// ✨ زر مخصص لإعادة الاستخدام
+class ActionButton extends StatelessWidget {
+  final String text;
+  final List<Color> color;
+  final VoidCallback onTap;
+
+  const ActionButton({
+    Key? key,
+    required this.text,
+    required this.color,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 40,
+        width: 90,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          gradient: LinearGradient(colors: color),
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+              color: Colors.black26,
+              blurRadius: 15,
+              offset: Offset(0, 5),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 50,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.teal[800]!,
-                    Colors.teal[600]!,
-                    Colors.cyan[700]!,
-                    Colors.cyan[500]!,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-            ),
-            const Text(
-              'Select Week',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 150,
-              child: CupertinoPicker(
-                itemExtent: 50,
-                scrollController: FixedExtentScrollController(initialItem:widget.currentSelectedWeek-1 ),
-                onSelectedItemChanged: (index) {
-                  setState(() {
-                    week=index;
-                    widget.currentSelectedWeek = index;
-                  });
-                },
-                children: letters.map((letter) {
-                  return Center(
-                    child: Text(
-                      letter,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                InkWell(
-                  onTap: (){
-                    FirebaseUtils.numWeek(numWeek: widget.currentSelectedWeek);
-                    Navigator.pop(context, widget.currentSelectedWeek);
-                  },
-                  child: Container(
-                    height: 40,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xff9b1010),
-                          Colors.red,
-                          Color(0xff9b1010),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child:  Center(
-                      child: Text(
-                        'Exit',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-
-                InkWell(
-                  onTap: (){
-                    Navigator.pop(context, widget.currentSelectedWeek);
-                    Navigator.pushNamed(context, ListOfUsers.routeName,arguments:{
-                      'week':week+1,
-                      'update':true
-                    });
-                    FirebaseUtils.updateWeek(week+1);
-                  },
-                  child: Container(
-                    height: 40,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blueAccent,
-                          Colors.cyan[700]!,
-                          Colors.cyan[500]!,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child:  const Center(
-                      child: Text(
-                        'Update',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: (){
-                    Navigator.pop(context, widget.currentSelectedWeek);
-                    FirebaseUtils.numWeek(numWeek: dataProvider.currentWeekNum,);
-                    FirebaseUtils.updateCurrentWeek(week+1);
-                    if(week==null){
-                      week=0;
-                    }
-                    else{
-                      FirebaseUtils.updateNextWeek(week);
-                      FirebaseUtils.updatePreviousWeek(week);
-                    }
-                  },
-                  child: Container(
-                    height: 40,
-                    width: 90,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.teal[800]!,
-                          Colors.teal[600]!,
-                          Colors.cyan[700]!,
-                          Colors.cyan[500]!,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child:  Center(
-                      child: Text(
-                        'Confirm',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ));
+        child: Center(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 16, color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }

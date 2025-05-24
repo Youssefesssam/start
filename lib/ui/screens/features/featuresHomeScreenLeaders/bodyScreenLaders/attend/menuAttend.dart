@@ -1,0 +1,343 @@
+import 'package:flutter/material.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import '../../../../../../firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
+import '../../../../../../model/modelData.dart';
+import '../../../../../../model/modelUserAttend.dart';
+
+class MenuAttend extends StatefulWidget {
+  String userId;
+  int weekNum;
+  User user;
+  final VoidCallback onCloseMenu; // Callback لإغلاق المنيو
+
+  MenuAttend({super.key,
+    required this.onCloseMenu,
+    required this.userId,
+    required this.weekNum,
+    required this.user});
+
+  @override
+  State<MenuAttend> createState() => _MenuState();
+}
+
+class _MenuState extends State<MenuAttend> {
+  int totalScore = 0; // إجمالي النقاط
+
+  // حالات العناصر ونقاطها
+  bool isMassActive = false;
+  int massScore = 0;
+
+  bool isCommunionActive = false;
+  int communionScore = 0;
+
+  bool isConfessionActive = false;
+  int confessionScore = 0;
+
+  bool isMeetingActive = false;
+  int meetingScore = 0;
+
+  // حالة العملية (في انتظار أو مكتملة)
+  bool isWaiting = false;
+  bool isDone = false;
+  bool dataAdded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xd0777676),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text("week number ==${widget.weekNum}"),
+          buildRow(
+              "القداس", isMassActive, massScore, () => toggleState("mass")),
+          const Divider(thickness: 1, color: Colors.white),
+          buildRow("التناول", isCommunionActive, communionScore,
+                  () => toggleState("communion")),
+          const Divider(thickness: 1, color: Colors.white),
+          buildRow("الاعتراف", isConfessionActive, confessionScore,
+                  () => toggleState("confession")),
+          const Divider(thickness: 1, color: Colors.white),
+          buildRow("الاجتماع", isMeetingActive, meetingScore,
+                  () => toggleState("meeting")),
+          const Divider(thickness: 1, color: Colors.white),
+          Column(
+            children: [
+              Center(
+                // إضافة Center لتوسيط العناصر
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (isWaiting)
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        child: const CircularProgressIndicator(
+                          color: Colors.blueAccent,
+                        ),
+                      )
+                    else
+                      if (isDone)
+                        const Icon(Icons.done, color: Colors.green, size: 30)
+                      else
+                        Column(
+                          children: [
+
+                            const SizedBox(height: 20), // مسافة بين الزرين
+
+                            InkWell(
+                              onTap: resetScores,
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 20, right: 20, top: 10, bottom: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Text(
+                                  "RESET",
+                                  style: TextStyle(
+                                      fontSize: 18, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20), // مسافة بين الزرين
+
+                            InkWell(
+                              onTap: () {
+
+                                dataAdded = true;
+                                addScoreUser(
+                                  score: totalScore,
+                                  meetingScoreDB: meetingScore,
+                                  communionScoreDB: communionScore,
+                                  confessionScoreDB: confessionScore,
+                                  massScoreDB: massScore,
+                                  weekNumber: widget.weekNum,
+                                );
+                                if (isMeetingActive) {
+                                  FireBaseSetDataForLeader.attendUsers(
+                                    widget.weekNum,
+                                    widget.user,
+                                    totalScore,
+                                    massScore,
+                                    communionScore,
+                                    confessionScore,
+                                    meetingScore,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 50, right: 50, top: 10, bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.teal,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  "CONFIRM",
+                                  style: TextStyle(
+                                      fontSize: 20, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildRow(String label, bool isActive, int score, VoidCallback toggle) {
+    return Row(
+      children: [
+        Container(
+          margin: const EdgeInsets.all(10),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 25, color: Colors.white),
+          ),
+        ),
+        const Spacer(),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: isActive
+              ? Text(
+            "+$score",
+            key: ValueKey(label),
+            style: const TextStyle(color: Colors.green, fontSize: 20),
+          )
+              : const SizedBox(key: ValueKey("hidden")),
+        ),
+        const SizedBox(width: 10),
+        InkWell(
+          onTap: toggle,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
+            child: Icon(
+              isActive
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank_outlined,
+              key: ValueKey(isActive),
+              color: Colors.white,
+              size: 35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void toggleState(String key) {
+    setState(() {
+      if (key == "mass") {
+        isMassActive = !isMassActive;
+        massScore = isMassActive ? 25 : 0;
+      } else if (key == "communion") {
+        isCommunionActive = !isCommunionActive;
+        communionScore = isCommunionActive ? 25 : 0;
+      } else if (key == "confession") {
+        isConfessionActive = !isConfessionActive;
+        confessionScore = isConfessionActive ? 25 : 0;
+      } else if (key == "meeting") {
+        isMeetingActive = !isMeetingActive;
+        meetingScore = isMeetingActive ? 25 : 0;
+      }
+
+      totalScore = massScore + communionScore + confessionScore + meetingScore;
+    });
+  }
+
+  void resetScores() {
+    setState(() {
+      totalScore = 0;
+      isMassActive =
+          isCommunionActive = isConfessionActive = isMeetingActive = false;
+      massScore = communionScore = confessionScore = meetingScore = 0;
+      isWaiting = false;
+      isDone = false;
+    });
+  }
+
+  void addScoreUser({required int score,
+    required int meetingScoreDB,
+    required int communionScoreDB,
+    required int confessionScoreDB,
+    required int massScoreDB,
+    required int weekNumber}) async {
+    print("Start adding data");
+
+    setState(() {
+      isWaiting = true;
+      isDone = false;
+    });
+
+    String userId = widget.userId;
+
+    if (userId.isEmpty) {
+      print("Error: User ID is empty");
+      setState(() {
+        isWaiting = false;
+      });
+      return;
+    }
+
+    try {
+      // إنشاء الكائن ModelData
+      ModelData modelData = ModelData(
+        massScore: massScoreDB,
+        communionScore: communionScoreDB,
+        confessionScore: confessionScoreDB,
+        meetingScore: meetingScoreDB,
+        leaderScore: totalScore,
+      );
+
+      // تحديث البيانات في Firebase
+      await FireBaseSetDataForLeader.updateScore(
+        yearId: '1',
+        weekId: '1',
+        monthId: '01',
+        newValue: totalScore,
+        scoreType: 'leaderScore',
+        userId: userId,
+      );
+      await FireBaseSetDataForLeader.updateScore(
+        yearId: '1',
+        weekId: '1',
+        monthId: '01',
+        newValue: meetingScoreDB,
+        scoreType: 'meetingScoreDB',
+        userId: userId,
+      );
+      await FireBaseSetDataForLeader.updateScore(
+        yearId: '1',
+        weekId: '1',
+        monthId: '01',
+        newValue: confessionScoreDB,
+        scoreType: 'confessionScoreDB',
+        userId: userId,
+      );
+      await FireBaseSetDataForLeader.updateScore(
+        yearId: '1',
+        weekId: '1',
+        monthId: '01',
+        newValue: massScoreDB,
+        scoreType: 'massScoreDB',
+        userId: userId,
+      );
+      await FireBaseSetDataForLeader.updateScore(
+        yearId: '1',
+        weekId: '1',
+        monthId: '01',
+        newValue: communionScoreDB,
+        scoreType: 'communionScoreDB',
+        userId: userId,
+      );
+      print("Data added successfully!");
+
+      setState(() {
+        isWaiting = false;
+        isDone = true;
+      });
+
+      // تأخير بسيط لإغلاق القائمة
+      Future.delayed(const Duration(milliseconds: 650), () {
+        widget.onCloseMenu();
+      });
+    } catch (error) {
+      print("Error adding data: $error");
+      setState(() {
+        isWaiting = false;
+        isDone = false;
+      });
+
+      // عرض رسالة للمستخدم في حال حدوث خطأ
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error adding data: $error")),
+      );
+    }
+  }
+}

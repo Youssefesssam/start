@@ -1,185 +1,231 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/appBarUser/appBarUsers/appBarUser.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:star_t/firebase/authProvider.dart';
 
+class UserProfilePage extends StatefulWidget {
+  static const String routeName = "UserProfilePage";
 
-class AccountProfile extends StatelessWidget {
-  static const String routeName ='account';
+  const UserProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _UserProfilePageState createState() => _UserProfilePageState();
+}
+
+class _UserProfilePageState extends State<UserProfilePage> {
+  bool isEditing = false;
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController talentController = TextEditingController();
+  final TextEditingController universityController = TextEditingController();
+  String profile="";
+  String selectedGender = "Male"; // Default value
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      nameController.text = prefs.getString('name') ?? "";
+      emailController.text = prefs.getString('email') ?? "";
+      phoneController.text = prefs.getString('phone') ?? "";
+      addressController.text = prefs.getString('address') ?? "";
+      talentController.text = prefs.getString('talent') ?? "Singing";
+      universityController.text = prefs.getString('university') ?? "";
+      selectedGender = prefs.getString('gender') ?? "";
+      profile=prefs.getString("profileUrl")??"";
+    });
+  }
+
+  Future<void> _saveUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('name', nameController.text);
+    await prefs.setString('email', emailController.text);
+    await prefs.setString('phone', phoneController.text);
+    await prefs.setString('address', addressController.text);
+    await prefs.setString('talent', talentController.text);
+    await prefs.setString('university', universityController.text);
+    await prefs.setString('gender', selectedGender);
+
+    setState(() {
+      isEditing = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    AuthProviders authProviders = Provider.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.teal[800],
+        title: const Text(
+          "Profile",
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(isEditing ? Icons.check : Icons.edit, color: Colors.white),
+            onPressed: () {
+              if (isEditing) {
+                _saveUserData();
+              } else {
+                setState(() {
+                  isEditing = true;
+                });
+              }
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16),
-                  Text(
-                    "Create new task",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-
-                  SizedBox(height: 10,),
-                  Container(
-                    height: 250,
-                    decoration: BoxDecoration(
-                      color: Colors.purple[100],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: LineChart(
-                        LineChartData(
-                          gridData: FlGridData(show: false),
-                          titlesData: FlTitlesData(
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                interval: 1,
-                                getTitlesWidget: (value, meta) {
-                                  switch (value.toInt()) {
-                                    case 0:
-                                      return Text('wek1');
-                                    case 1:
-                                      return Text('wek2');
-                                    case 2:
-                                      return Text('wek3');
-                                    case 3:
-                                      return Text('wek4');
-                                    default:
-                                      return Text('');
-                                  }
-                                },
-                                reservedSize: 25,
-                              ),
-                            ),
-                            topTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
-                          lineBarsData: [
-                            LineChartBarData(
-                              isCurved: true,
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.purple,
-                                  Colors.purple.withOpacity(0.5),
-                                ],
-                              ),
-                              barWidth: 4,
-                              isStrokeCapRound: true,
-                              belowBarData: BarAreaData(
-                                show: true,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.purple.withOpacity(0.3),
-                                    Colors.purple.withOpacity(0.1),
-                                  ],
-                                ),
-                              ),
-                              spots: [
-                                FlSpot(0, 3),
-                                FlSpot(1, 1.5),
-                                FlSpot(2, 2.5),
-                                FlSpot(3, 4),
-
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  Text(
-                    "Activity",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildStatCard("Score", "150", Icons.score),
-                      _buildStatCard("Weekly Word", "", Icons.wb_iridescent),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildStatCard("gift", "", Icons.card_giftcard),
-                      _buildStatCard("achive", "", Icons.where_to_vote_rounded),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: CircleAvatar(
+                  radius: 70,
+                  backgroundImage:  NetworkImage(authProviders.profileURl!), // Replace with your image path
+                  backgroundColor: Colors.white,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              buildProfileItem("Name", nameController),
+              buildProfileItem("Email", emailController),
+              buildProfileItem("Phone", phoneController),
+              buildProfileItem("Address", addressController),
+              buildProfileItem("Talent", talentController),
+              buildProfileItem("University", universityController),
+              buildGenderItem(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  setState(() {
+                    isEditing = true;
+                  });
+                },
+                child: const Text(
+                  "Edit Profile",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String count, IconData icon) {
-    return Expanded(
-      child: Container(
-        margin: EdgeInsets.all(8.0),
-        padding: EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
+  Widget buildProfileItem(String title, TextEditingController controller) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: Colors.purple,
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: controller,
+            enabled: isEditing,
+            decoration: InputDecoration(
+              border: isEditing ? const OutlineInputBorder() : InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             ),
-            SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildGenderItem() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Gender",
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
             ),
-            SizedBox(height: 8),
-            Text(
-              count,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple,
-              ),
+          ),
+          const SizedBox(height: 8),
+          isEditing
+              ? DropdownButtonFormField<String>(
+            value: selectedGender,
+            items: ["male", "female"].map((String gender) {
+              return DropdownMenuItem<String>(
+                value: gender,
+                child: Text(gender),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedGender = value!;
+              });
+            },
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
-          ],
-        ),
+          )
+              : Text(
+            selectedGender,
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:star_t/firebase/firebase.dart';
+
+import '../../../../../firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import '../../../../../utilites/appTexts.dart';
 
 class Word extends StatefulWidget {
   const Word({super.key});
@@ -56,10 +58,10 @@ class _WordState extends State<Word> {
                   // العنوان
                   Text(
                     "Write the word",
-                    style: GoogleFonts.aclonica(
+                    style: GoogleFonts.abel(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Colors.teal[800],
+                      color: Colors.blue[800],
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -70,7 +72,7 @@ class _WordState extends State<Word> {
                     stream: FirebaseFirestore.instance.collection('word').orderBy('Time', descending: true).limit(1).snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator(color: Colors.teal));
+                        return Center(child: CircularProgressIndicator(color: Colors.blue));
                       }
                       var docs = snapshot.data!.docs;
                       String lastMessage = docs.isNotEmpty ? docs.first['message'] : "No words yet";
@@ -104,7 +106,7 @@ class _WordState extends State<Word> {
                                 style: TextStyle(
                                   fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.teal,
+                                  color: Colors.blue,
                                 ),
                               ),
                             ],
@@ -170,10 +172,12 @@ class _WordState extends State<Word> {
                       // زر المشاركة
                       InkWell(
                         onTap: () async {
-                          await FirebaseUtils.sendWord(
+                          await FireBaseSetDataForLeader.sendWord(
                             message: wordController.text,
                             sender: "tina",
                           );
+                          AppTexts.fristSeenWord(true);
+
                           wordController.clear();
                         },
                         child: Container(
@@ -182,8 +186,11 @@ class _WordState extends State<Word> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(25),
                             gradient: LinearGradient(
-                              colors: [Colors.teal[800]!, Colors.teal[600]!],
-                              begin: Alignment.topLeft,
+                              colors: [
+                                Colors.deepPurple.shade800,
+                                Colors.blue,
+                                Colors.indigo.shade600,
+                              ],                              begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [

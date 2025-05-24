@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:star_t/utilites/appAssets.dart';
 
 class TeemScreen extends StatelessWidget {
   static const String routeName="teemScreen";
@@ -6,6 +8,16 @@ class TeemScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+
+      body: ModelViewer(
+        src: AppAssets.loder,
+        alt: "3D Model",
+        autoRotate: true,
+        cameraControls: true,
+        backgroundColor: Colors.grey,
+
+      ),
+    );
   }
 }

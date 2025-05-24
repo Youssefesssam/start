@@ -1,14 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_to_act/slide_to_act.dart';
-import 'package:star_t/firebase/firebase.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseSetDataForLeader.dart';
+import '../../../../../../firebase/authProvider.dart';
+import '../../../../../../firebase/dataProvider.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseGetDataForUser.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
+import '../../../../../../firebase/providerTotalScore.dart';
+import '../../../../../../utilites/appTexts.dart';
+import '../../../../../../utilites/consts.dart';
 
-class WordUser extends StatelessWidget {
+class WordUser extends StatefulWidget {
   const WordUser({super.key});
 
   @override
+  State<WordUser> createState() => _WordUserState();
+}
+
+class _WordUserState extends State<WordUser> {
+  @override
+  bool isFirstSeen = AppTexts.seenWord;
+
   Widget build(BuildContext context) {
+
+    ProviderTotalScore providerTotalScore =
+        Provider.of<ProviderTotalScore>(context, listen: false);
+    DataProvider dataProvider = Provider.of(context);
+    AuthProviders authProviders = Provider.of(context);
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -38,6 +60,14 @@ class WordUser extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  height: 5,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
                 Text(
                   " the word that will be said next week",
                   style: GoogleFonts.abyssinicaSil(
@@ -49,25 +79,18 @@ class WordUser extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseUtils.fetchMessages(),
+                  stream: FireBaseGetDataForUser.fetchMessages(),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                          child: CircularProgressIndicator()); // عرض مؤشر تحميل
-                    }
-
                     if (snapshot.hasError) {
                       return Center(
-                          child: Text(' wrong: ${snapshot.error}')); // عرض الخطأ
+                          child:
+                              Text(' wrong: ${snapshot.error}')); // عرض الخطأ
                     }
-
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Center(
                           child: Text('no messages')); // إذا لم توجد بيانات
                     }
-
                     final messages = snapshot.data!.docs;
-
                     return Column(
                       children: [
                         const SizedBox(height: 30),
@@ -119,7 +142,12 @@ class WordUser extends StatelessWidget {
                                   title: Center(
                                     child: Column(
                                       children: [
-                                        SizedBox(height: MediaQuery.of(context).size.height*.065,),
+                                        SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              .065,
+                                        ),
                                         Text(
                                           text,
                                           style: GoogleFonts.abyssinicaSil(
@@ -131,7 +159,6 @@ class WordUser extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-
                                 ),
                               );
                             },
@@ -143,38 +170,65 @@ class WordUser extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .11,
-                  width: MediaQuery.of(context).size.width * .7,
+                  height: MediaQuery.of(context).size.height * .05,
+                  width: MediaQuery.of(context).size.width * .5,
                   child: Center(child: Builder(
                     builder: (context) {
-                      final GlobalKey<SlideActionState> _key = GlobalKey();
+                      final GlobalKey<SlideActionState> _key =
+                      GlobalKey();
                       return Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(.1),
                         child: SlideAction(
                           innerColor: Colors.white,
-                          sliderButtonIconPadding: 10,
+                          sliderButtonIconPadding: 2,
                           sliderButtonIcon: const Icon(
                             Icons.person,
-                            size: 50,
+                            size: 22,
                             color: Colors.teal,
                           ),
                           submittedIcon: const Icon(
                             Icons.favorite,
-                            size: 50,
+                            size: 20,
                             color: Colors.white,
                           ),
                           outerColor: Colors.teal,
                           enabled: true,
-                          elevation: 12,
+                          elevation: 0,
                           textColor: Colors.white,
                           sliderRotate: true,
                           height: 80,
                           key: _key,
-                          onSubmit: () {
-                            Future.delayed(
-                              const Duration(seconds: 1),
-                              () => _key.currentState!.reset(),
-                            );
+                          onSubmit: () async {
+                            await Consts.getWordId();
+                            CollectionReference wordRef = FirebaseFirestore.instance.collection('word');
+                            QuerySnapshot snapshot = await wordRef.get();
+
+                            if (snapshot.docs.isNotEmpty) {
+                              var doc = snapshot.docs.first;
+                              String docId = doc.id;
+                              if (doc.id != authProviders.wordId || authProviders.wordId == null) {
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                await prefs.setString("wordId", docId);
+                                authProviders.setwordId(docId);
+
+                                int currentScore = await FireBaseSetDataForUser.getScore(
+                                  yearId: '1',
+                                  weekId: authProviders.week.toString(),
+                                  monthId: authProviders.currentMonth.toString(),
+                                  scoreType: 'scoreSeenUserWord',
+                                  userId: authProviders.userId!,
+                                );
+                                int updatedScore = currentScore + 5;
+                                await FireBaseSetDataForLeader.updateScore(
+                                  yearId: '1',
+                                  weekId: authProviders.week.toString(),
+                                  monthId: authProviders.currentMonth.toString(),
+                                  newValue: updatedScore,
+                                  scoreType: 'scoreSeenUserWord',
+                                  userId: authProviders.userId!,
+                                );
+                              }
+                            }
                           },
                           child: Row(
                             children: [
@@ -184,7 +238,7 @@ class WordUser extends StatelessWidget {
                                   "Seen",
                                   style: GoogleFonts.aboreto(
                                       color: Colors.white,
-                                      fontSize: 30,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold),
                                 ),
                               )
@@ -194,7 +248,7 @@ class WordUser extends StatelessWidget {
                       );
                     },
                   )),
-                )
+                ),
               ],
             ),
           ),

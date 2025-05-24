@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+// Firebase
+import 'package:star_t/firebase/authProvider.dart';
 import 'package:star_t/firebase/dataProvider.dart';
-import 'package:star_t/firebase/firebase.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/opnion.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/sweetTalk.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/task.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/team.dart';
+import 'package:star_t/firebase/fireBase/fireBaseForLeader/fireBaseGetDataForeLeader.dart';
+
+// Screens
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/week.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/opnion.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/absent/absent.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/event.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/sweetTalk.dart';
 import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/word.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/eventUser.dart';
-import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/ideasUser.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/team.dart';
+import 'package:star_t/ui/screens/features/featuresHomeScreenLeaders/home/task.dart';
+
+// User Features
+import 'package:star_t/ui/screens/features/featuresHomeScreenUsers/Contents/general/idea/ideasUser.dart';
+
+// Utilities
 import 'package:star_t/utilites/appColors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import '../../../../../model/modelSweetTalk.dart';
-import 'event.dart';
+import 'package:lottie/lottie.dart'; // Lottie for background animation
 
 class Home extends StatefulWidget {
   static const String routeName = "home";
@@ -29,7 +37,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  int? lastSelectedWeek; // متغير لحفظ آخر قيمة
+  int? lastSelectedWeek;
+  bool _isFirstRun = true;
 
   @override
   void initState() {
@@ -41,6 +50,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+    FireBaseGetDataForLeader.saveDateInProvider(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isFirstRun) {
+      FireBaseGetDataForLeader.saveDateInProvider(context);
+      _isFirstRun = false;
+    }
   }
 
   @override
@@ -55,288 +74,163 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     });
   }
 
-
+  void _showCustomBottomSheet(Widget widget) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      isDismissible: true,
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (context) => Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: widget,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     DataProvider dataProvider = Provider.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.grey[900],
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: AppColors.backGround,
-            begin: Alignment.bottomCenter,
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 50,
-              left: 20,
-              child: Text(
-                "GOOD Timing",
-                style: GoogleFonts.aclonica(
-                  color: Colors.teal,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+      backgroundColor: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // خلفية فضائية باستخدام Lottie
+
+
+          // تدرج لوني خفيف فوق الخلفية
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.indigo.withOpacity(0.4),
+                  Colors.blueGrey.withOpacity(0.4),
+                  Colors.blue.withOpacity(0.4),
+                ],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
               ),
             ),
-            Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: InkWell(
-                        onTap: () async {
-                          final selectedIndex = await showModalBottomSheet<int>(
-                            isScrollControlled: true,
-                            isDismissible: true,
-                            backgroundColor: Colors.transparent,
-                            context: context,
-                            builder: (context) => Week(currentSelectedWeek: lastSelectedWeek!,),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.all(30),
-                          height: 120,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              colors: AppColors.smoothColorTeal,
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: StreamBuilder<DocumentSnapshot>(
-                            stream: FirebaseUtils.currentWeek(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                // عرض آخر قيمة تم اختيارها
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "${lastSelectedWeek ?? 0}",
-                                      // إذا lastSelectedWeek == null، نعرض 0
-                                      style: GoogleFonts.abyssinicaSil(
-                                        fontSize: 50,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Week",
-                                      style: GoogleFonts.abyssinicaSil(
-                                        fontSize: 30,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
+          ),
 
-                              if (!snapshot.hasData || !snapshot.data!.exists) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "${lastSelectedWeek ?? 0}",
-                                      // إذا lastSelectedWeek == null، نعرض 0
-                                      style: GoogleFonts.abyssinicaSil(
-                                        fontSize: 50,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Week",
-                                      style: GoogleFonts.abyssinicaSil(
-                                        fontSize: 30,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-
-                              final weekNumber =
-                              snapshot.data!['weekNumber'] as int;
-                              lastSelectedWeek =
-                                  weekNumber; // حفظ القيمة الجديدة
-                              dataProvider.currentWeekNum = weekNumber;
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "$weekNumber",
-                                    style: GoogleFonts.aclonica(
-                                      fontSize: 35,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Week",
-                                    style: GoogleFonts.abyssinicaSil(
-                                      fontSize: 25,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child:
-                          buildOption('IDeas', Icons.lightbulb_outline, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => IdeasUser(),
-                            );
-                          }),
-                        ),
-                        Flexible(
-                          child: buildOption('Opinion', Icons.comment, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.of(context).viewInsets,
-                                child: Opinion(),
-                              ),
-                            );
-                          }),
-                        ),
-                        Flexible(
-                          child: buildOption('Special', Icons.star, () {
-                            _onTap();
-                          }),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: buildOption(" SweetTalk", Icons.favorite_border, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.of(context).viewInsets,
-                                child: SweetTalk(),
-                              ),
-                            );
-                          }),
-                        ),
-                        Flexible(
-                          child: buildOption("Word", Icons.text_fields, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.of(context).viewInsets,
-                                child: Word(),
-                              ),
-                            );
-                          }),
-                        ),
-                        Flexible(
-                          child: buildOption("Team", Icons.group, () {
-                            _onTap();
-                            showModalBottomSheet(
+          // المحتوى الرئيسي
+          Stack(
+            children: [
+              Positioned(
+                top: 50,
+                left: 20,
+                child: Text(
+                  "GOOD Timing",
+                  style: GoogleFonts.aclonica(
+                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: InkWell(
+                          onTap: () async {
+                            final selectedIndex = await showModalBottomSheet<int>(
                               isScrollControlled: true,
                               isDismissible: true,
                               backgroundColor: Colors.transparent,
                               context: context,
                               builder: (context) =>
-                                  _buildDraggableScrollableSheet(Team()),
+                                  Week(currentSelectedWeek: lastSelectedWeek ?? 1),
                             );
-                          }),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: buildOption("Task", Icons.assignment, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.of(context).viewInsets,
-                                child: Task(),
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.all(30),
+                            height: 120,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.shade800,
+                                  Colors.blue,
+                                  Colors.indigo.shade600,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            );
-                          }),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: StreamBuilder<DocumentSnapshot>(
+                              stream: FireBaseGetDataForLeader.currentWeek(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return _buildWeekDisplay(lastSelectedWeek ?? 0);
+                                }
+                                if (!snapshot.hasData ||
+                                    !snapshot.data!.exists) {
+                                  return _buildWeekDisplay(lastSelectedWeek ?? 0);
+                                }
+                                final weekNumber =
+                                snapshot.data!['weekNumber'] as int;
+                                lastSelectedWeek = weekNumber;
+                                dataProvider.currentWeekNum = weekNumber;
+                                return _buildWeekDisplay(weekNumber);
+                              },
+                            ),
+                          ),
                         ),
-                        Flexible(
-                          child: buildOption("Event", Icons.event, () {
-                            _onTap();
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              context: context,
-                              builder: (context) => Padding(
-                                padding: MediaQuery.of(context).viewInsets,
-                                child: Event(),
-                              ),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      _buildRowOptions(),
+                      _buildSecondRowOptions(),
+                      _buildThirdRowOptions(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget buildOption(String optionName, IconData icon, VoidCallback onTap) {
+  Widget _buildWeekDisplay(int weekNumber) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "$weekNumber",
+          style: GoogleFonts.aclonica(
+            fontSize: 35,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          "Week",
+          style: GoogleFonts.abyssinicaSil(
+            fontSize: 25,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOption(String optionName, IconData icon, Color colorIcon,
+      VoidCallback onTap, Gradient gradient) {
     return ScaleTransition(
       scale: _scaleAnimation,
       child: InkWell(
@@ -346,11 +240,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           height: 100,
           width: 100,
           decoration: BoxDecoration(
-            color: Color(0xfffcfcfc),
+            gradient: gradient,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.white.withOpacity(0.2),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -362,18 +256,17 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               Icon(
                 icon,
                 size: MediaQuery.of(context).size.width * 0.08,
-                color: Colors.teal,
+                color: colorIcon,
               ),
               const SizedBox(height: 10),
               Text(
                 optionName,
                 style: GoogleFonts.abyssinicaSil(
                   fontSize: MediaQuery.of(context).size.width * 0.04,
-                  color: Colors.black,
+                  color: Colors.blue,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
             ],
           ),
         ),
@@ -381,51 +274,110 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  DraggableScrollableSheet _buildDraggableScrollableSheet(Widget nameWidget) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      snap: true,
-      snapSizes: const [0.4, 0.6, 0.9],
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(20),
-            ),
-          ),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 5,
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.lightgrey,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(50),
-                      topRight: Radius.circular(50),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                ),
-                nameWidget,
+  Widget _buildRowOptions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: _buildOption('IDeas', Icons.lightbulb_outline, Colors.blue,
+                  () {
+                _onTap();
+                _showCustomBottomSheet(IdeasUser());
+              }, const LinearGradient(
+                colors: [Colors.white, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )),
+        ),
+        Flexible(
+          child: _buildOption('Opinion', Icons.comment, Colors.blue, () {
+            _onTap();
+            _showCustomBottomSheet(Opinion());
+          }, const LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+        ),
+        Flexible(
+          child: _buildOption("Team", Icons.group, Colors.blue, () {
+            _onTap();
+            Navigator.pushNamed(context, Team.routeName);
+          }, const LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+        ),
+      ],
+    );
+  }
 
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _buildSecondRowOptions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: _buildOption("Sweet", Icons.favorite_border, Colors.blue,
+                  () {
+                _onTap();
+                _showCustomBottomSheet(SweetTalk());
+              }, const LinearGradient(
+                colors: [Colors.white, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )),
+        ),
+        Flexible(
+          child: _buildOption("Word", Icons.text_fields, Colors.blue, () {
+            _onTap();
+            _showCustomBottomSheet(Word());
+          },  LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+        ),
+        Flexible(
+          child: _buildOption('Absent', Icons.notification_important_sharp,
+              Colors.blue, () {
+                _onTap();
+                _showCustomBottomSheet(Absent());
+              }, const LinearGradient(
+                colors: [Colors.white, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildThirdRowOptions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: _buildOption("Task", Icons.assignment, Colors.blue, () {
+            _onTap();
+            _showCustomBottomSheet(Task());
+          }, const LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+        ),
+        Flexible(
+          child: _buildOption("Event", Icons.event, Colors.blue, () {
+            _onTap();
+            _showCustomBottomSheet(Event());
+          }, const LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+        ),
+      ],
     );
   }
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../../../../firebase/dataProvider.dart';
 
 class WeekUser  extends StatefulWidget {
   WeekUser ({super.key});
@@ -13,6 +16,8 @@ class _WeekState extends State<WeekUser > {
   int selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
+
+
     return Container(
         decoration: BoxDecoration(
           color: Colors.white,

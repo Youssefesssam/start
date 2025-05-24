@@ -68,7 +68,7 @@ class DesignCard extends StatelessWidget {
             Positioned(
               top: -10,
               right: -8,
-              child: Natification(
+              child: Notifications(
                 color: colorNatification,
                 appear: appearNatification,
                 num: numNatification, appearIcon: false,

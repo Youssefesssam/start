@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:slide_to_act/slide_to_act.dart';
+import '../../../../../../firebase/fireBase/fireBaseForUser/fireBaseSetDataForUser.dart';
 
 class OpinionUser extends StatelessWidget {
   OpinionUser({super.key});
@@ -11,7 +12,7 @@ class OpinionUser extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.teal[50]!, Colors.white],
+          colors: [Colors.blue[50]!, Colors.white],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -43,7 +44,7 @@ class OpinionUser extends StatelessWidget {
                     height: 5,
                     width: 50,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.grey[500],
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -55,17 +56,17 @@ class OpinionUser extends StatelessWidget {
                   children: [
                     Text(
                       "Write Your Opinion",
-                      style: GoogleFonts.poppins(
-                        fontSize: 25,
+                      style: GoogleFonts.abyssinicaSil(
+                        fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Colors.teal[800],
+                        color: Colors.blue[800],
                       ),
                     ),
                     const SizedBox(width: 10),
                     Icon(
                       Icons.favorite,
-                      size: 30,
-                      color: Colors.teal[700],
+                      size: 20,
+                      color: Colors.blue[700],
                     ),
                   ],
                 ),
@@ -74,18 +75,18 @@ class OpinionUser extends StatelessWidget {
                 // صورة رمزية لحدث
                 Center(
                   child: Container(
-                    height: 150,
-                    width: 150,
+                    height: MediaQuery.of(context).size.height*.12,
+                    width: MediaQuery.of(context).size.width*.5,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [Colors.teal[300]!, Colors.teal[100]!],
+                        colors: [Colors.blue[300]!, Colors.blue[100]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.teal.withOpacity(0.2),
+                          color: Colors.blue.withOpacity(0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -93,7 +94,7 @@ class OpinionUser extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.event,
-                      size: 80,
+                      size: 50,
                       color: Colors.white,
                     ),
                   ),
@@ -102,7 +103,8 @@ class OpinionUser extends StatelessWidget {
 
                 // حقل إدخال النص
                 TextField(
-                  maxLines: 4,
+                  controller: opinion,
+                  maxLines: 2,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.grey[50],
@@ -128,20 +130,22 @@ class OpinionUser extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     SizedBox(
-                      height: 60,
-                      width: 180,
+                      height: 50,
+                      width: MediaQuery.of(context).size.width * 0.4,
                       child: SlideAction(
                         innerColor: Colors.white,
                         outerColor: Color(0xffd32f2f), // تغيير اللون الأحمر إلى أحمر أغمق
                         elevation: 10,
                         textColor: Colors.white,
                         sliderButtonIconSize: 10,
-                        sliderButtonIconPadding: 12,
-                        sliderButtonIcon: Icon(Icons.delete, size: 25, color: Color(0xffd32f2f)),
+                        sliderButtonIconPadding: 8,
+                        animationDuration: Duration( milliseconds: 200),
+
+                        sliderButtonIcon: Icon(Icons.exit_to_app, size: 25, color: Color(0xffd32f2f)),
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
                         onSubmit: () {
-                          Future.delayed(const Duration(seconds: 2), () {
+                          Future.delayed(const Duration(seconds: 1), () {
                              Navigator.pop(context);
 
                           }
@@ -165,20 +169,22 @@ class OpinionUser extends StatelessWidget {
                     ),
                     SizedBox(width: 10,),
                     SizedBox(
-                      height: 60,
-                      width: 180,
+                      height: 50,
+                      width: MediaQuery.of(context).size.width * 0.4,
                       child: SlideAction(
                         innerColor: Colors.white,
-                        outerColor: Colors.teal,
+                        outerColor: Colors.blue,
                         elevation: 10,
                         textColor: Colors.white,
                         sliderButtonIconSize: 10,
-                        sliderButtonIconPadding: 12,
-                        sliderButtonIcon: Icon(Icons.send, size: 20, color: Colors.teal),
+                        sliderButtonIconPadding: 8,
+                        animationDuration: Duration( milliseconds: 450),
+                        sliderButtonIcon: Icon(Icons.send, size: 20, color: Colors.blue),
                         submittedIcon: Icon(Icons.check, size: 30, color: Colors.white),
                         key: GlobalKey<SlideActionState>(),
-                        onSubmit: () {
-                          Future.delayed(const Duration(seconds: 1), () => print("Opinion Sent!"));
+                        onSubmit: () async { // أضف async هنا
+                          await FireBaseSetDataForUser.addOpinionUser(opinion.text, "5u0qEXBm0eaW7J0n5Y8VhF5WdBD2"); // استخدم await
+                          opinion.clear(); // مسح النص بعد اكتمال العملية
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
